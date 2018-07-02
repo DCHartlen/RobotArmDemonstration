@@ -3,14 +3,21 @@
 #include <Encoder.h>    // Encoder controls
 #include <Servo.h>      // Servo Controlls
 #include <OneButton.h>    // Button debounce controls
+#include "OperatingModeDefinition.h"    // defines all operating modes
+#include "InitializationFunctions.h"    // defines all mode setup functions
+#include "UpdateFunctions.h"    // Defines controller updates for all operating modes
+#include "ServoDefinitions.h"   // Defines each servo used in arm
+
+// Total degrees of freedom: 3 joints + claw = 4
+#define degressOfFreedom 4
 
 // Define digital pins for encoder
-#define encoderPinBtn 11
-#define encoderPinA 12
-#define encoderPinB 13
+#define encoderPinA 11
+#define encoderPinB 12
+#define encoderPinBtn 13
 
 // Define constants
-long countEncoderTurns = 0; // counts number of encoder turns
+long countEncoderTicks = 0; // counts number of encoder turns
 
 // define encoder object
 Encoder controlEncoder(encoderPinA,encoderPinB);
@@ -28,12 +35,12 @@ int updateFreq = 10;      // frequency at which commands are updated (10ms)
 int SerialFreq = 40;      // Freqncy at which serial update (40ms)
 
 // Define mode and joint counters
-int operatingMode = 0;  // Defines initial and current operating mode
+int currentMode = 0;  // Defines operating mode that system boots into at startup
 
 // Define polar coordinates (used in IK and Gcode)
 double R;   // Radius
 double H;   // Angle theta
-double A;   // Axial/ Z axis
+double Azimuth;   // Azimuth
 
 // Define cartesian coordinates
 double X = 0;
@@ -50,7 +57,10 @@ void setup() {
     encoderBtn.attachDoubleClick(doubleClick);
     encoderBtn.attachClick(singleClick);
 
-    // Add initialization for servos, pot control, and operating modes
+    setupOperatingModes();
+    // TODO add OperatingModes[currentMode].ModeInitialization();
+
+    // TODO Add initialization for servos, pot control, and operating modes
 
 }
 
@@ -70,8 +80,10 @@ void loop() {
 
 void doubleClick() {
     Serial.println("DOUBLE CLICK!!");
+    // TODO add doubleclick logic, increment operating mode, run mode setup, etc.
 }
 
 void singleClick() {
     Serial.println("Single click");
+    // TODO add singleclick logic. Update current Joint
 }
