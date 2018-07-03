@@ -1,1 +1,2 @@
+// void setupDirectEncoderControl ();
 void setupDirectEncoderControl();

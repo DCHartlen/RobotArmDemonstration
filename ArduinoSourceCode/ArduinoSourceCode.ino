@@ -3,13 +3,10 @@
 #include <Encoder.h>    // Encoder controls
 #include <Servo.h>      // Servo Controlls
 #include <OneButton.h>    // Button debounce controls
-#include "OperatingModeDefinition.h"    // defines all operating modes
 #include "InitializationFunctions.h"    // defines all mode setup functions
-#include "UpdateFunctions.h"    // Defines controller updates for all operating modes
-#include "ServoDefinitions.h"   // Defines each servo used in arm
-
-// Total degrees of freedom: 3 joints + claw = 4
-#define degressOfFreedom 4
+// #include "UpdateFunctions.h"    // Defines controller updates for all operating modes
+#include "ServoFunctions.h"   // Defines each servo used in arm
+#include "OperatingModeDefinition.h"    // defines all operating modes
 
 // Define digital pins for encoder
 #define encoderPinA 11
