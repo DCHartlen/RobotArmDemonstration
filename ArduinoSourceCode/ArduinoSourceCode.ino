@@ -4,7 +4,7 @@
 #include <Servo.h>      // Servo Controlls
 #include <OneButton.h>    // Button debounce controls
 #include "InitializationFunctions.h"    // defines all mode setup functions
-// #include "UpdateFunctions.h"    // Defines controller updates for all operating modes
+#include "UpdateFunctions.h"    // Defines controller updates for all operating modes
 #include "ServoFunctions.h"   // Defines each servo used in arm
 #include "OperatingModeDefinition.h"    // defines all operating modes
 
@@ -12,6 +12,7 @@
 #define encoderPinA 11
 #define encoderPinB 12
 #define encoderPinBtn 13
+
 
 // Define constants
 long countEncoderTicks = 0; // counts number of encoder turns
@@ -33,6 +34,7 @@ int SerialFreq = 40;      // Freqncy at which serial update (40ms)
 
 // Define mode and joint counters
 int currentMode = 0;  // Defines operating mode that system boots into at startup
+int currentJointControlled = 0; // Defines joint currently controlled by encoder
 
 // Define polar coordinates (used in IK and Gcode)
 double R;   // Radius
@@ -77,10 +79,15 @@ void loop() {
 
 void doubleClick() {
     Serial.println("DOUBLE CLICK!!");
+    currentMode++;  // Increment Mode
+    currentMode = currentMode%nModes;   // modulus to ensure mode is always within available number
+    OperatingModes[currentMode].ModeInitialization; // Run mode initialization
+    currentJointControlled = 0; // Reset joint control
     // TODO add doubleclick logic, increment operating mode, run mode setup, etc.
 }
 
 void singleClick() {
     Serial.println("Single click");
-    // TODO add singleclick logic. Update current Joint
+    currentJointControlled++;   // Cycle through joints to cotrol. Same modulus control above.
+    currentJointControlled = currentJointControlled%degreesOfFreedom;
 }

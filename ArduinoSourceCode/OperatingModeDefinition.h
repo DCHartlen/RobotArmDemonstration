@@ -16,41 +16,26 @@ struct ModePrototype{
     objectFunction ModeUpdate;
 };
 
-// typedef void (*VoidProcedure) ();
-
-
 void EmptyProc (){
   
 }
-// struct StageContainer {
-//   char *StageName;
-//   VoidProcedure InitProc;
-//   VoidProcedure ControlProc ;
-//   VoidProcedure DisplayProc;
-//   VoidProcedure CickProc ;
-// };
 
-#define nModes 1    //total number of operating modes
+#define nModes 2    //total number of operating modes
 
 // Create object containing all operating modes
 ModePrototype OperatingModes [nModes];  
-// StageContainer OperatingModes [nModes];
-
-// Create initialization method which populates the object of operating modes
-// void setupOperatingModes() {
-//     // Mode 1 (0): directly control servo angle using encoder.
-//     OperatingModes[0].ModeName = "DirectEncoderControl";
-//     OperatingModes[0].ModeInitialization = DefaultInit
-//     OperatingModes[0].ModeUpdate = updateDirectEncoderControl;
-
-//     // TODO Add more functions
-// }
 
 void setupOperatingModes() {
-    // Mode 1 (0): directly control servo angle using encoder.
-    OperatingModes[0].ModeName = "DirectEncoderControl";
-    OperatingModes[0].ModeInitialization = setupDirectEncoderControl;
-    OperatingModes[0].ModeUpdate = setupDirectEncoderControl;
+    // Mode 1 (0); Calibration mode, Encoder directly controls servo raw value, 
+    // No logic used for max and min. 
+    OperatingModes[1].ModeName = "CalibrationMode";
+    OperatingModes[1].ModeInitialization = setupCalibrationMode;
+    OperatingModes[1].ModeUpdate = updateCalibrationMode;
+
+    // Mode 2 (1): Directly control the angle of the servo using the encoder
+    OperatingModes[1].ModeName = "DirectEncoderControl";
+    OperatingModes[1].ModeInitialization = setupDirectEncoderControl;
+    OperatingModes[1].ModeUpdate = updateDirectEncoderControl;
 
     // TODO Add more functions
 }
