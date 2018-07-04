@@ -1,5 +1,5 @@
 void updateCalibrationMode(){
-    // Update currently selected servo with encoder
+    // Update currently selected servo's raw value with encoder
     ControlServos[currentJointControlled].currentRaw = 
         ControlServos[currentJointControlled].currentRaw + controlEncoder.read();
     // Reset encoder tick counter to zero to prevent spiral out of control
@@ -14,5 +14,15 @@ void updateCalibrationMode(){
 }
 
 void updateDirectEncoderControl(){
-    // Use encoder to control the currently selected servo. Update all servos
+    // Use encoder to control the currently selected servo's angle. Encoder has
+    // four ints per tick, so divide by for. each tick is a degree. 
+    ControlServos[currentJointControlled].currentAngle = 
+        ControlServos[currentJointControlled].currentAngle + controlEncoder.read()/4;
+    // Reset encoder
+    controlEncoder.write(0);
+
+    // Update all servos
+    for(int iServo=0; iServo < degreesOfFreedom; iServo ++) {
+        SetServoAngle(ControlServos[iServo], ControlServos[iServo].currentAngle);
+    }
 };
