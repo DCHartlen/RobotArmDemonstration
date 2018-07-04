@@ -4,3 +4,5 @@
 void setupCalibrationMode();
 // Operating Mode 2: Control servo angle directly with encoder
 void setupDirectEncoderControl();
+// Operating Mode 3: Control cartesian position with encoder
+void setupCartesianEncoderControl();

@@ -12,6 +12,13 @@ void setupDirectEncoderControl() {
     float temp;
     for (int iServo = 0; iServo<degreesOfFreedom; iServo++) {
         temp = ControlServos[iServo].initialAngle;
-        SetServoAngle(ControlServos[iServo], temp);
+        ActuateServo(ControlServos[iServo], temp);
     }
+}
+
+void setupCartesianEncoderControl() {
+    clawAngle = 45;
+    x = 0;
+    y = 80;
+    z = 25;
 }

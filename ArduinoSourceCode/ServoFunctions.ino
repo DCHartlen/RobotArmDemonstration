@@ -1,4 +1,4 @@
-int SetServoAngle(ServoObject servo, float proposedAngle){
+int ActuateServo(ServoObject servo, float proposedAngle){
     // Set the servo's angle while respecting bounds
     int tempRaw = 0;    // Temporary servo raw. must respect bounds
     int errorCode;  // Error code returned by bound check
@@ -11,16 +11,19 @@ int SetServoAngle(ServoObject servo, float proposedAngle){
         default:
             servo.currentRaw = tempRaw;
             servo.currentAngle = proposedAngle;
+            break;
         // Error 1: max bound exceeded. Set to maximum angle
         case 1:
             servo.currentRaw = servo.servoMax;
             servo.currentAngle = InterpolationFloat(servo.angle1,servo.angle2,servo.raw1,
                                                      servo.raw2, servo.servoMax);
+            break;
         // Error -1: minimum bound exceeded. Set to minimum angle.  
         case -1:
             servo.currentRaw = servo.servoMin;
             servo.currentAngle = InterpolationFloat(servo.angle1,servo.angle2,servo.raw1,
                                                      servo.raw2, servo.servoMin);
+            break;
     }
     // Based on movement saved above, move the actual servo. 
     servo.ServoObj.write(servo.currentRaw);

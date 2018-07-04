@@ -30,7 +30,7 @@ ServoObject ControlServos [degreesOfFreedom];
 // Set a servo to a particular angle. Calls ServoBoundCheck to ensure that only
 // valid angles are set. Returns an error code if bounds exceeded and sets servo
 // max/min angle. 
-int SetServoAngle(ServoObject servo, float proposedAngle);
+int ActuateServo(ServoObject servo, float proposedAngle);
 
 // Given a servo and angle, assign raw servo value (pointer) and return error code
 // code 1: angle exceeds maximum safe angle. code -1: servo exceed minimum bounds

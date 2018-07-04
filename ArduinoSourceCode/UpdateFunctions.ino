@@ -23,6 +23,39 @@ void updateDirectEncoderControl(){
 
     // Update all servos
     for(int iServo=0; iServo < degreesOfFreedom; iServo ++) {
-        SetServoAngle(ControlServos[iServo], ControlServos[iServo].currentAngle);
+        ActuateServo(ControlServos[iServo], ControlServos[iServo].currentAngle);
     }
 };
+
+void updateCartesianEncoderControl() {
+    // control x,y,z with encoder.
+
+    // Based on "currentJointControlled", choose DoF to increment
+    switch(currentJointControlled){
+        case 0:     // x direction control
+            x = x + controlEncoder.read();
+            controlEncoder.write(0);
+            break;
+        case 1:     // y direction control
+            y = y + controlEncoder.read();
+            controlEncoder.write(0);
+            break;
+        case 2:     // z direction control
+            z = z + controlEncoder.read();
+            controlEncoder.write(0);
+            break;
+        case 3:     // Claw control
+            clawAngle = clawAngle + controlEncoder.read();
+            controlEncoder.write(0);
+            break;
+    }
+
+    // Move all joints using inverse kinematics
+    MoveIK(x,y,z,shoulderAngle,elbowAngle,baseAngle);
+
+    // Actuate the claw
+    ControlServos[ServoClaw].currentAngle = clawAngle;
+    ActuateServo(ControlServos[ServoClaw],ControlServos[ServoClaw].currentAngle);
+
+
+}

@@ -7,12 +7,12 @@
 #include "UpdateFunctions.h"    // Defines controller updates for all operating modes
 #include "ServoFunctions.h"   // Defines each servo used in arm
 #include "OperatingModeDefinition.h"    // defines all operating modes
+#include "Kinematics.h"     // Math for inverse kinematics
 
 // Define digital pins for encoder
 #define encoderPinA 11
 #define encoderPinB 12
 #define encoderPinBtn 13
-
 
 // Define constants
 long countEncoderTicks = 0; // counts number of encoder turns
@@ -42,15 +42,15 @@ double shoulderAngle = 90;
 double elbowAngle = 90;
 double clawAngle = 45;
 
-// Define polar coordinates (used in IK and Gcode)
-double rValue;   // rValue
-double hValue;   // hValue
-double aValue;   // Azimuth
+// // Define polar coordinates (used in IK and Gcode)
+// double rValue;   // rValue
+// double hValue;   // hValue
+// double aValue;   // Azimuth
 
 // Define cartesian coordinates
-double X = 0;
-double Y = 0;
-double Z = 0;
+double x = 0;
+double y = 0;
+double z = 0;
 
 void setup() {
     Serial.begin(57600);    // define baud rate for USB serial coms

@@ -37,6 +37,11 @@ void setupOperatingModes() {
     OperatingModes[1].ModeInitialization = setupDirectEncoderControl;
     OperatingModes[1].ModeUpdate = updateDirectEncoderControl;
 
+    // Mode 3 (2): Directly control the angle of the servo using the encoder
+    OperatingModes[1].ModeName = "CartesianEncoderControl";
+    OperatingModes[1].ModeInitialization = setupCartesianEncoderControl;
+    OperatingModes[1].ModeUpdate = updateCartesianEncoderControl;
+
     // TODO Add more functions
 }
 
