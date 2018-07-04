@@ -36,10 +36,16 @@ int SerialFreq = 40;      // Freqncy at which serial update (40ms)
 int currentMode = 0;  // Defines operating mode that system boots into at startup
 int currentJointControlled = 0; // Defines joint currently controlled by encoder
 
+// Define joint angles for arm
+double baseAngle = 90;
+double shoulderAngle = 90;
+double elbowAngle = 90;
+double clawAngle = 45;
+
 // Define polar coordinates (used in IK and Gcode)
-double R;   // Radius
-double H;   // Angle theta
-double Azimuth;   // Azimuth
+double rValue;   // rValue
+double hValue;   // hValue
+double aValue;   // Azimuth
 
 // Define cartesian coordinates
 double X = 0;
