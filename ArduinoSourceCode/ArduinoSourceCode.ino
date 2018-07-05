@@ -3,9 +3,10 @@
 #include <Encoder.h>    // Encoder controls
 #include <Servo.h>      // Servo Controlls
 #include <OneButton.h>    // Button debounce controls
+#include "ServoFunctions.h"   // Defines each servo used in arm
 #include "InitializationFunctions.h"    // defines all mode setup functions
 #include "UpdateFunctions.h"    // Defines controller updates for all operating modes
-#include "ServoFunctions.h"   // Defines each servo used in arm
+#include "GCodeModule.h"    // gcode parser
 #include "OperatingModeDefinition.h"    // defines all operating modes
 #include "Kinematics.h"     // Math for inverse kinematics
 
