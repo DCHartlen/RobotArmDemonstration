@@ -18,7 +18,7 @@ void help() {
 // Given a code (G, X, Y, Z, etc), find the assocaited value
 float ParseCommandComponent(char code,float val) {
   char *ptr=serialBuffer;
-  while(ptr && *ptr && ptr<buffer+currentBufferLength) {
+  while(ptr && *ptr && ptr<serialBuffer+currentBufferLength) {
     if(*ptr==code) {
       return atof(ptr+1);
     }
@@ -43,19 +43,62 @@ void outputCode(char *code,float val) {
 
 // Prints the current location to servo
 void printCurrentLocation() {
-  outputCode("X",X);
-  outputCode("Y",Y);
-  outputCode("Z",Z);
-  outputCode("C",AngularServos[ServoClaw].Angle);
-  outputCode("F",FeedRate);
-  Serial.println(mode_abs?"ABS":"REL");
+  outputCode("X",x);
+  outputCode("Y",y);
+  outputCode("Z",z);
+  outputCode("C",ControlServos[ServoClaw].currentAngle);
+  outputCode("F",feedRate);
+  Serial.println(flagAbsolute?"ABS":"REL");
 } 
 
-// TODO add setpoint commands, fastest and feedrate.
+// Move servos as fast as possible. Used as base for LinearMove
+int BasicMove (float xTarget, float yTarget, float zTarget) {
+    float shoulderTarget, elbowTarget;
+    int errorCode = 0;
+
+    // perfor inverse kinematics
+    MoveIK(xTarget, yTarget, zTarget, shoulderAngle, elbowAngle,baseAngle);
+    
+    x = xTarget;
+    y = yTarget;
+    z = zTarget;
+    return 0;
+}
+
+// Moves manipulator to the target location in a straight line at a give feedrate.
+// Relies on repeated calls of Move and delays. By standard gcode convention,
+// feedrate/moveSpeed is given in millimeters per minute
+int LinearMove(float xTarget, float yTarget, float zTarget, float moveSpeed) {
+    int  nSegments;
+    int segmentDelay = 10;
+    float xDelta, yDelta, zDelta;
+    float moveDistance;
+    unsigned long segmentMillis;
+
+    // Compute cartesian difference between target and current location
+    xDelta = xTarget-x;
+    yDelta = yTarget-y;
+    zDelta = zTarget-z;
+
+    // Compute the rectangular norm (distance) between target and current
+    moveDistance = sqrt(xDelta*xDelta + yDelta*yDelta + zDelta*zDelta);
+    // determine number of segments based on a 100 Hz update speed
+    nSegments = moveDistance/moveSpeed*60*(1000/segmentDelay);
+
+    // Move in little segmnets
+    for (int iSegment = 1; iSegment <= nSegments; iSegment++) {
+        segmentMillis = millis();
+        BasicMove(x+xDelta/nSegments, y+yDelta/nSegments, y+yDelta/nSegments);
+        // non-blocking pause method
+        while((millis()-segmentMillis)<segmentDelay) {}; 
+    }
+    // Move the final segment
+    BasicMove(xTarget,yTarget,zTarget);
+}
 
 
 
-// Parse buffer and execute setpoints
+// Parse buffer and execute moves
 void ExecuteCommand() {
     float xTarget, yTarget, zTarget;
 
@@ -66,7 +109,7 @@ void ExecuteCommand() {
     switch(command) {
         // Case G00: move arm as fast as possible to new target location
         case  0:{
-            if (mode_abs==1){
+            if (flagAbsolute==1){
             xTarget=ParseCommandComponent('X',x);
             yTarget=ParseCommandComponent('Y',y);
             zTarget=ParseCommandComponent('Z',z);
@@ -77,13 +120,13 @@ void ExecuteCommand() {
             }
 
             // Move the arm
-            rc=setpoint(xTarget, yTarget, zTarget);
+            errorCode=BasicMove(xTarget, yTarget, zTarget);
             printCurrentLocation();
             break;
         }
         // Case G01: move arm at provided "feedrate"
         case  1: { // line
-            if (mode_abs==1){
+            if (flagAbsolute==1){
             xTarget=ParseCommandComponent('X',x);
             yTarget=ParseCommandComponent('Y',y);
             zTarget=ParseCommandComponent('Z',z);
@@ -92,10 +135,10 @@ void ExecuteCommand() {
             yTarget=y+ParseCommandComponent('Y',0);
             zTarget=z+ParseCommandComponent('Z',0);
             }
-            FeedRate=ParseCommandComponent('F',FeedRate);
+            feedRate=ParseCommandComponent('F',feedRate);
             
             // Move the arm
-            rc=LinearSetpoint(xTarget, yTarget, zTarget,FeedRate);
+            errorCode=LinearMove(xTarget, yTarget, zTarget,feedRate);
             printCurrentLocation();
             break;
         }
@@ -105,11 +148,11 @@ void ExecuteCommand() {
             break;
         // Case G90: Set absolute movement mode
         case 90:
-            mode_abs=1;  
+            flagAbsolute=1;  
             break;
         // Case 91: Set relative movement mode
         case 91:  
-            mode_abs=0;  
+            flagAbsolute=0;  
             break;
         default:  
             break;
@@ -124,7 +167,7 @@ void ExecuteCommand() {
             break;
         // Case M106: Actuate the claw
         case 106: 
-            ActuateServo(CommandServos[ServoClaw], ParseCommandComponent('S',AngularServos[ServoClaw].Angle));
+            ActuateServo(ControlServos[ServoClaw], ParseCommandComponent('S',ControlServos[ServoClaw].currentAngle));
             break;
         // Case M114: Print current location
         case 114:  
@@ -133,8 +176,13 @@ void ExecuteCommand() {
         default:  
             break;
     }
+}
 
-    
+void ReportReady() {
+    // reset buffer indexer
+    currentBufferLength = 0;
+    Serial.println(F("Ack"));   // send acknowledgment
+    Serial.print(F(">"));   // standard symbol indicates machine ready for next command
 }
 
 // Main entry point for Gcode control.  Reads serial buffer.
@@ -143,17 +191,28 @@ void GCodeControl(){
     while(Serial.available() >0) {
         // Reading serial port one character at a time
         char c=Serial.read();
-        // Serial.print(c); //echo for confirmation
+        Serial.print(c); //echo for confirmation
         // add to character to buffer
-        if(currentBufferLength<BufferLength-1) {
+        if(currentBufferLength<bufferLength-1) {
             serialBuffer[currentBufferLength++] = c;
         }
         // if a newline is found, 
         if (c == '\n') {
             serialBuffer[currentBufferLength] = 0;
-            //TODO add ExecuteCommand
-            //TODO add idle function
+            
+            // parse and execute gcode command
+            ExecuteCommand();
+            // report ready
+            ReportReady();
         }
     }
 
+}
+
+void setupGCodeControl(){
+  Serial.println("Gcode Control initializated");
+  // move to home position
+  LinearMove(00,80,00,1000);
+  printCurrentLocation();
+  ReportReady();
 }

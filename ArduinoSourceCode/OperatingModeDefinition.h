@@ -16,11 +16,11 @@ struct ModePrototype{
     objectFunction ModeUpdate;
 };
 
-void EmptyProc (){
+void doNothingMode (){
   
 }
 
-#define nModes 2    //total number of operating modes
+#define nModes 4    //total number of operating modes
 
 // Create object containing all operating modes
 ModePrototype OperatingModes [nModes];  
@@ -38,11 +38,14 @@ void setupOperatingModes() {
     OperatingModes[1].ModeUpdate = updateDirectEncoderControl;
 
     // Mode 3 (2): Directly control the angle of the servo using the encoder
-    OperatingModes[1].ModeName = "CartesianEncoderControl";
-    OperatingModes[1].ModeInitialization = setupCartesianEncoderControl;
-    OperatingModes[1].ModeUpdate = updateCartesianEncoderControl;
+    OperatingModes[2].ModeName = "CartesianEncoderControl";
+    OperatingModes[2].ModeInitialization = setupCartesianEncoderControl;
+    OperatingModes[2].ModeUpdate = updateCartesianEncoderControl;
 
-    // TODO Add more functions
+    // Mode 4 (3): Directly control the angle of the servo using the encoder
+    OperatingModes[3].ModeName = "GCodeControl";
+    OperatingModes[3].ModeInitialization = setupGCodeControl; // found in GCodeModule
+    OperatingModes[3].ModeUpdate = GCodeControl;    // found in GCodeControl
 }
 
 

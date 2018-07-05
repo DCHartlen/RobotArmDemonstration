@@ -1,12 +1,13 @@
-#define MAX_BUF              (32)  // What is the longest message Arduino can store?
-#define MAX_FEEDRATE         (1000000) //millimeters per minute
-#define MIN_FEEDRATE         (1)      //millimeters per minute
+#define bufferLength (32)  // What is the longest message Arduino can store?
 
 char flagAbsolute=1;  // commands in absolute coordinates
 char serialBuffer[bufferLength];
 int currentBufferLength;
-float feedRate
+float feedRate = 1000;
 
+// initialization fuction for gcode control
+void setupGCodeControl();
+// "update" function for gcode control
 void GCodeControl();
-
+// print the current location of the manipulator
 void printCurrentLocation();

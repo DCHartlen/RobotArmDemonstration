@@ -69,11 +69,18 @@ int MoveIK(double x, double y, double z, double &shoulderAngle, double &elbowAng
     double rValue;
     double hValue;
     double aValue;
+    int errorCode;
 
     // Convert cartesian coordinates to polar
-    ConvertToPolar(x,y,z,rValue,hValue,aValue);
+    errorCode = ConvertToPolar(x,y,z,rValue,hValue,aValue);
     // Using polar coordinates, perform the mathematics to return shoulder and elbow angle
-    InverseKinematicsMath(rValue,hValue,shoulderAngle,elbowAngle);
+    if (errorCode != 0){
+        return errorCode;
+    }
+    errorCode = InverseKinematicsMath(rValue,hValue,shoulderAngle,elbowAngle);
+    if (errorCode != 0){
+        return errorCode;
+    }
 
     // Set the angle of the base
     baseAngle = aValue;

@@ -56,18 +56,21 @@ double z = 0;
 void setup() {
     Serial.begin(57600);    // define baud rate for USB serial coms
 
+    // Define pin for encoder button
     pinMode(encoderPinBtn,INPUT_PULLUP); // Define button functionality
 
+    // Define constants for encoder button to acknowlege click and double Click
     encoderBtn.setDebounceTicks(20);
     encoderBtn.setClickTicks(300);
     encoderBtn.attachDoubleClick(doubleClick);
     encoderBtn.attachClick(singleClick);
 
+    // Initialize servos
+    setupControlServos();
+    // Initialize operating mode
     setupOperatingModes();
-    // TODO add OperatingModes[currentMode].ModeInitialization();
-
-    // TODO Add initialization for servos, pot control, and operating modes
-
+    // "Boot" into whatever mode is specified by currentMode
+    OperatingModes[currentMode].ModeInitialization();
 }
 
 void loop() {
@@ -79,8 +82,9 @@ void loop() {
 
         // update the button click object. Needed to detect single and double clicks
         encoderBtn.tick(); 
-
     }
+
+    // TODO add update functions.
 
 }
 
