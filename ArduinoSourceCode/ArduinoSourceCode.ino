@@ -84,7 +84,7 @@ void loop() {
         encoderBtn.tick(); 
     }
 
-    // TODO add update functions.
+    // TODO: add update functions.
 
 }
 
@@ -94,7 +94,6 @@ void doubleClick() {
     currentMode = currentMode%nModes;   // modulus to ensure mode is always within available number
     OperatingModes[currentMode].ModeInitialization; // Run mode initialization
     currentJointControlled = 0; // Reset joint control
-    // TODO add doubleclick logic, increment operating mode, run mode setup, etc.
 }
 
 void singleClick() {

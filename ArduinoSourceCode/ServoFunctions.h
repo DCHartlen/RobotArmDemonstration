@@ -51,7 +51,7 @@ void setupControlServos(){
     ControlServos[ServoBase].initialAngle = 90;
     ControlServos[ServoBase].ServoObj.attach(ControlServos[ServoBase].pin);
     ControlServos[ServoBase].ServoObj.write(ControlServos[ServoBase].initialAngle);
-    ControlServos[ServoBase].currentRaw = 1500; //TODO replace with linear map
+    ControlServos[ServoBase].currentRaw = 1500; //TODO: replace with linear map
     ControlServos[ServoBase].currentAngle = ControlServos[ServoBase].initialAngle;
 
 
@@ -66,7 +66,7 @@ void setupControlServos(){
     ControlServos[ServoShoulder].initialAngle = 180;
     ControlServos[ServoShoulder].ServoObj.attach(ControlServos[ServoShoulder].pin);
     ControlServos[ServoShoulder].ServoObj.write(ControlServos[ServoShoulder].initialAngle);
-    ControlServos[ServoShoulder].currentRaw = 1500; //TODO replace with linear map
+    ControlServos[ServoShoulder].currentRaw = 1500; //TODO: replace with linear map
     ControlServos[ServoShoulder].currentAngle = ControlServos[ServoShoulder].initialAngle;
 
         // Elbow servo
@@ -80,7 +80,7 @@ void setupControlServos(){
     ControlServos[ServoElbow].initialAngle = 90;
     ControlServos[ServoElbow].ServoObj.attach(ControlServos[ServoElbow].pin);
     ControlServos[ServoElbow].ServoObj.write(ControlServos[ServoElbow].initialAngle);
-    ControlServos[ServoElbow].currentRaw = 1500; //TODO replace with linear map
+    ControlServos[ServoElbow].currentRaw = 1500; //TODO: replace with linear map
     ControlServos[ServoElbow].currentAngle = ControlServos[ServoElbow].initialAngle;
 
         // Claw servo
@@ -94,6 +94,6 @@ void setupControlServos(){
     ControlServos[ServoClaw].initialAngle = 45;
     ControlServos[ServoClaw].ServoObj.attach(ControlServos[ServoClaw].pin);
     ControlServos[ServoClaw].ServoObj.write(ControlServos[ServoClaw].initialAngle);
-    ControlServos[ServoClaw].currentRaw = 1500; //TODO replace with linear map
+    ControlServos[ServoClaw].currentRaw = 1500; //TODO: replace with linear map
     ControlServos[ServoClaw].currentAngle = ControlServos[ServoClaw].initialAngle;
 }
