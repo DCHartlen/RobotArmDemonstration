@@ -35,7 +35,7 @@ void pause(long ms) {
 
 
 // Shorthand means of printing coordinate pairs to serial
-void outputCode(char *code,float val) {
+void outputCode(String code,float val) {
   Serial.print(code);
   Serial.print(val);
   Serial.print(" ");

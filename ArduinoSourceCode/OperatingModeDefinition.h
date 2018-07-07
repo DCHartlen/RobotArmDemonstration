@@ -11,7 +11,7 @@ typedef void (*objectFunction) ();
 // Define the prototype for each operating mode. Each operating mode has its own
 // name, initialization, and update function. Update function runs every 10 ms
 struct ModePrototype{
-    char *ModeName;
+    String ModeName;
     objectFunction ModeInitialization;
     objectFunction ModeUpdate;
 };
@@ -58,7 +58,7 @@ void setupOperatingModes() {
     OperatingModes[5].ModeUpdate = GCodeControl;
 
     // Mode 7 (6): Mode for Tic-Tac-Toe (which is controlled using gcode)
-    OperatingModes[6].ModeName = "Tic-Tac-ToeMode";
+    OperatingModes[6].ModeName = "TicTacToeMode";
     OperatingModes[6].ModeInitialization = setupGCodeControl; // found in GCodeModule
     OperatingModes[6].ModeUpdate = GCodeControl;    // found in GCodeControl
 }
