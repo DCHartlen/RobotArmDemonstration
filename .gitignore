@@ -34,3 +34,6 @@
 # Visual Studios Code
 *.code*
 \.vscode
+
+# python
+*.pyc
