@@ -48,14 +48,14 @@ void setupOperatingModes() {
     OperatingModes[3].ModeUpdate = GCodeControl;    // found in GCodeControl
 
     // Mode 5 (4): Joystick Joint Control
-    OperatingModes[4].ModeName = "JoystickJointControl";
-    OperatingModes[4].ModeInitialization = setupGCodeControl; // TODO: joystick  joint control
-    OperatingModes[4].ModeUpdate = GCodeControl;
+    OperatingModes[4].ModeName = "DirectGamepadControl";
+    OperatingModes[4].ModeInitialization = setupGamepadControl; // TODO: joystick  joint control
+    OperatingModes[4].ModeUpdate = DirectGamepadControl;
 
     // Mode 6 (5): Joystick Cartesian Control
-    OperatingModes[5].ModeName = "JoystickCartesianControl";
-    OperatingModes[5].ModeInitialization = setupGCodeControl; // TODO: joystick Cartesian control 
-    OperatingModes[5].ModeUpdate = GCodeControl;
+    OperatingModes[5].ModeName = "CartesianGamepadControl";
+    OperatingModes[5].ModeInitialization = setupGamepadControl; // TODO: joystick Cartesian control 
+    OperatingModes[5].ModeUpdate = CartesianGamepadControl;
 
     // Mode 7 (6): Mode for Tic-Tac-Toe (which is controlled using gcode)
     OperatingModes[6].ModeName = "TicTacToeMode";
