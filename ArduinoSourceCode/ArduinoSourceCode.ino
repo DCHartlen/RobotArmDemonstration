@@ -7,6 +7,7 @@
 #include "InitializationFunctions.h"    // defines all mode setup functions
 #include "UpdateFunctions.h"    // Defines controller updates for all operating modes
 #include "GCodeModule.h"    // gcode parser
+#include "GamepadInterface.h"   // gamepad interface and controls
 #include "OperatingModeDefinition.h"    // defines all operating modes
 #include "Kinematics.h"     // Math for inverse kinematics
 

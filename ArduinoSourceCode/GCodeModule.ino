@@ -53,7 +53,6 @@ void printCurrentLocation() {
 
 // Move servos as fast as possible. Used as base for LinearMove
 int BasicMove (float xTarget, float yTarget, float zTarget) {
-    float shoulderTarget, elbowTarget;
     int errorCode = 0;
 
     // perfor inverse kinematics
@@ -95,8 +94,6 @@ int LinearMove(float xTarget, float yTarget, float zTarget, float moveSpeed) {
     // Move the final segment
     BasicMove(xTarget,yTarget,zTarget);
 }
-
-
 
 // Parse buffer and execute moves
 void ExecuteCommand() {
@@ -198,21 +195,20 @@ void GCodeControl(){
         }
         // if a newline is found, 
         if (c == '\n') {
+            // write a zero to make arduino happy
             serialBuffer[currentBufferLength] = 0;
-            
             // parse and execute gcode command
             ExecuteCommand();
             // report ready
             ReportReady();
         }
     }
-
 }
 
 void setupGCodeControl(){
   Serial.println("Gcode Control initializated");
   // move to home position
-  LinearMove(00,80,00,1000);
+  LinearMove(0,80,0,1000);
   printCurrentLocation();
   ReportReady();
 }

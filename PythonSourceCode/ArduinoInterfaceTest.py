@@ -30,7 +30,7 @@ class ArduinoInterface():
         try:
             self.arduinoInput = serial.Serial(self.arduinoPort, 9600, timeout=5)
             # Need to readline after initialization or the wprogram stalls later?
-            ackMsg = self.arduinoInput.read_until(self.ackSymbol)
+            self.arduinoInput.read_until(self.ackSymbol)
             print('Success!')
         except:
             # If there is an exception, return without starting collection
