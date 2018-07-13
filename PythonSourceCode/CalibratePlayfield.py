@@ -39,9 +39,9 @@ class CalibratePlayfield:
         circles = circles[0]
 
          # sort circles, assuming that camera is to the left of image. Therefore:
-        #    3 | 6 | 9 
-        #    2 | 5 | 8
-        #    1 | 4 | 7
+        #    0 | 1 | 2 
+        #    3 | 4 | 5
+        #    6 | 7 | 8
         # Start by sorting circles left to right
         sortIndex = np.argsort(circles[:, 1], axis=0)
         circles = circles[sortIndex, :]
