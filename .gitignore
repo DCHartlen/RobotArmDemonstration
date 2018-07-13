@@ -37,3 +37,7 @@
 
 # python
 *.pyc
+
+# Project Specifics
+*.png
+*.jpg
