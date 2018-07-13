@@ -42,12 +42,12 @@ class CalibratePlayfield:
         #    3 | 6 | 9 
         #    2 | 5 | 8
         #    1 | 4 | 7
-        # Start by sorting circles top to bottom
-        sortIndex = np.argsort(circles[:, 0], axis=0)
+        # Start by sorting circles left to right
+        sortIndex = np.argsort(circles[:, 1], axis=0)
         circles = circles[sortIndex, :]
-
+        # Now order top down. Must be done column by column.
         for i in [0, 3, 6]:
-            sortIndex = np.argsort(circles[i:i+3, 1], axis=0)
+            sortIndex = np.argsort(circles[i:i+3, 0], axis=0)
             circles[i:i+3, :] = circles[sortIndex+i, :]
 
         # TODO: make sure cicle ordering is consistant.
@@ -95,14 +95,14 @@ class CalibratePlayfield:
 
 
 if __name__ == "__main__":
-    path = r"C:\Users\hartl\Documents\GitHub\RobotArmDemonstration\PythonSourceCode\ImageRecognition\TestImages\EmptyBoardStraight.jpg"
+    path = r"C:\Users\hartl\Documents\GitHub\RobotArmDemonstration\PythonSourceCode\TestImages\EmptyBoardStraight.jpg"
     print(path)
 
     baseImage = cv.imread(path)
     testCal = CalibratePlayfield(True)
     centers, radii = testCal.FindPlayCircles(baseImage)
     regions = testCal.CreateROIs(centers,radii)
-
+    print(regions[0])
     
     for i in regions:
         cv.imshow('Region', baseImage[i[0]:i[1], i[2]:i[3]])
@@ -110,3 +110,4 @@ if __name__ == "__main__":
         cv.destroyWindow
 
     print(testCal.imageDims)
+    
