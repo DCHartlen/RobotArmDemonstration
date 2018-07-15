@@ -78,11 +78,12 @@ class CalibratePlayfield:
         gameRegions = np.zeros([9,4])
 
         # For all nine circles, create an ROI
-        for i in range(len(gameRegions)):
-            gameRegions[i,:] = [circleCenters[i,0]-self.ratioRadiiSquare*circleRadii[i],
-                circleCenters[i,0]+self.ratioRadiiSquare*circleRadii[i],
-                circleCenters[i,1]-self.ratioRadiiSquare*circleRadii[i],
-                circleCenters[i,1]+self.ratioRadiiSquare*circleRadii[i]]
+        for i,radii in enumerate(circleRadii):
+            # Regions are collected [y,x] as images indexed [rows, columns]
+            gameRegions[i,:] = [circleCenters[i,1]-self.ratioRadiiSquare*radii,
+                circleCenters[i,1]+self.ratioRadiiSquare*radii,
+                circleCenters[i,0]-self.ratioRadiiSquare*radii,
+                circleCenters[i,0]+self.ratioRadiiSquare*radii]
         
         # ROIs must be integers
         gameRegions = np.uint16(np.around(gameRegions))
@@ -95,17 +96,20 @@ class CalibratePlayfield:
 
 
 if __name__ == "__main__":
-    path = r"C:\Users\hartl\Documents\GitHub\RobotArmDemonstration\PythonSourceCode\TestImages\EmptyBoardStraight.jpg"
+    # path = r"C:\Users\Devon\Desktop\testImages\EmptyBoardStraight.jpg"
+    path = r"C:\Users\Devon\Desktop\testImages\RealBlank.jpg"
     print(path)
 
     baseImage = cv.imread(path)
     testCal = CalibratePlayfield(True)
     centers, radii = testCal.FindPlayCircles(baseImage)
     regions = testCal.CreateROIs(centers,radii)
-    print(regions[0])
     
-    for i in regions:
-        cv.imshow('Region', baseImage[i[0]:i[1], i[2]:i[3]])
+    for i,region in enumerate(regions):
+        print(region)
+        temp = baseImage.copy()
+        temp = baseImage[region[0]:region[1], region[2]:region[3]]
+        cv.imshow('Region', temp)
         cv.waitKey(0)
         cv.destroyWindow
 
