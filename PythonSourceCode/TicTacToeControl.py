@@ -29,20 +29,29 @@ class TicTacToeControl:
     
     def ScanSquares(self,imageCapture):
         gsCapture = cv.cvtColor(imageCapture,cv.COLOR_BGR2GRAY)
+        # gsCapture = cv.adaptiveThreshold(gsCapture,250, cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #                 cv.THRESH_BINARY,21,20)
         for iRegion, region in enumerate(self.regionROIs):
             # Capture only the current region from the greyscale image
             currentROI = self.__GetImageROI__(gsCapture,region)
+            currentROI = cv.threshold(currentROI,self.gsThreshold,255,cv.THRESH_BINARY_INV)
+            currentROI = cv.GaussianBlur(currentROI,[5,5],0)
 
             # scan through each region looking for circles
-            gamePiece = cv.HoughCircles(currentROI,cv.HOUGH_GRADIENT, 1, 2,
-                                        maxRadius=self.maxInnerRadii[0])
-            
+            gamePiece = cv.HoughCircles(currentROI,cv.HOUGH_GRADIENT, 2, self.maxInnerRadii[iRegion],
+                                        maxRadius=self.maxInnerRadii[iRegion])
+
             # If a cirlce is found, determine if it is an X or 0
             if gamePiece is not None:
+                print(gamePiece)
                 tokenCenter= np.uint16(np.around(gamePiece[0,0,0:2]))
                 symbol = self.DetectSymbol(currentROI, tokenCenter)
                 # place symbol in the gameboard
-                symbol = self.__UpdateGameboard(iRegion,symbol)
+                self.__UpdateGameboard(iRegion,symbol)
+                cv.circle(currentROI, (tokenCenter[0], tokenCenter[1]), int(gamePiece[0,0,2]), (0, 255, 0), 2)
+
+            cv.imshow('region',currentROI)
+            cv.waitKey(0)
 
             # If there is no piece in the square, print message
             # TODO: add logic to detect hands, say the loss of a circle
@@ -52,8 +61,8 @@ class TicTacToeControl:
 
     def DetectSymbol(self, currentROI, tokenCenter):
         # Get the average of a [6,6] pixel array at the center of the gamepiece
-        subset = currentROI[(tokenCenter[0]-3):(tokenCenter[0]+3),
-                            (tokenCenter[1]-3):(tokenCenter[1]+3)]
+        subset = currentROI[(tokenCenter[1]-3):(tokenCenter[1]+3),
+                            (tokenCenter[0]-3):(tokenCenter[0]+3)]
         # Compute the overall mean value of the pixels. 
         subsetAvg = np.mean(np.mean(subset))
         # Base on average pixel value, determine if X or O. X has white center,
@@ -81,11 +90,12 @@ class TicTacToeControl:
 
 
 if __name__ == "__main__":
-    emptyPath = r"C:\Users\hartl\Documents\GitHub\RobotArmDemonstration\PythonSourceCode\TestImages\EmptyBoardStraight.jpg"
+    emptyPath = r"C:\Users\Devon\Desktop\testImages\RealBlank.jpg"
     emptyImg = cv.imread(emptyPath)
-    twoPiecePath = r"C:\Users\hartl\Documents\GitHub\RobotArmDemonstration\PythonSourceCode\TestImages\Board1x1o.jpg"
-    twoPieceImage = cv.imread(twoPiecePath)
-    cv.imshow('BaseImage',twoPieceImage)
+    testImagePath = r"C:\Users\Devon\Desktop\testImages\Real2O2X.jpg"
+    testImagePath = cv.imread(testImagePath)
+    cv.imshow('BaseImage',testImagePath)
     gameControl = TicTacToeControl()
     gameControl.PlayfieldCalibration(emptyImg)
-    gameControl.ScanSquares(twoPieceImage)
+    gameControl.ScanSquares(testImagePath)
+    cv.destroyWindow
