@@ -1,5 +1,6 @@
 import numpy as np
 import cv2 as cv
+import GameAI as brainBox
 from CalibratePlayfield import CalibratePlayfield
 
 class TicTacToeControl:
@@ -13,8 +14,13 @@ class TicTacToeControl:
     # TODO: add interactive thresholding??? Maybe adaptive thresholding???
     gsThreshold = 200
 
-    def __init__(self):
+    players = ['X', 'O']
+    firstPlayer = 'O' # Robot plays as X
+
+    def __init__(self, debugFlag=False):
         print("started")
+        self.debugFlag = debugFlag
+        self.gameAI = brainBox.GameAI()
 
     def PlayfieldCalibration(self, imageCapture):
         # Create calibration object
@@ -29,35 +35,35 @@ class TicTacToeControl:
     
     def ScanSquares(self,imageCapture):
         gsCapture = cv.cvtColor(imageCapture,cv.COLOR_BGR2GRAY)
-        # gsCapture = cv.adaptiveThreshold(gsCapture,250, cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-        #                 cv.THRESH_BINARY,21,20)
         for iRegion, region in enumerate(self.regionROIs):
             # Capture only the current region from the greyscale image
             currentROI = self.__GetImageROI__(gsCapture,region)
-            currentROI = cv.threshold(currentROI,self.gsThreshold,255,cv.THRESH_BINARY_INV)
-            currentROI = cv.GaussianBlur(currentROI,[5,5],0)
+            currentROI = cv.GaussianBlur(currentROI, (7,7),0)
 
             # scan through each region looking for circles
-            gamePiece = cv.HoughCircles(currentROI,cv.HOUGH_GRADIENT, 2, self.maxInnerRadii[iRegion],
-                                        maxRadius=self.maxInnerRadii[iRegion])
+            gamePiece = cv.HoughCircles(currentROI,cv.HOUGH_GRADIENT, 2, 
+                self.maxInnerRadii[iRegion],
+                maxRadius=self.maxInnerRadii[iRegion])
 
             # If a cirlce is found, determine if it is an X or 0
             if gamePiece is not None:
-                print(gamePiece)
                 tokenCenter= np.uint16(np.around(gamePiece[0,0,0:2]))
+                # Look for symbol
                 symbol = self.DetectSymbol(currentROI, tokenCenter)
                 # place symbol in the gameboard
-                self.__UpdateGameboard(iRegion,symbol)
-                cv.circle(currentROI, (tokenCenter[0], tokenCenter[1]), int(gamePiece[0,0,2]), (0, 255, 0), 2)
-
-            cv.imshow('region',currentROI)
-            cv.waitKey(0)
-
+                self.__UpdateGameboard__(iRegion,symbol)
+                # add circle to image for debug
+                cv.circle(currentROI, (tokenCenter[0], tokenCenter[1]), 
+                    int(gamePiece[0,0,2]), (0, 255, 0), 2)
             # If there is no piece in the square, print message
             # TODO: add logic to detect hands, say the loss of a circle
             # else:   
                 # print("empty")
-        print(self.gameBoard)
+            
+            # If debug is activated, print region to screen
+            if self.debugFlag == True:
+                cv.imshow('region',currentROI)
+                cv.waitKey(0)
 
     def DetectSymbol(self, currentROI, tokenCenter):
         # Get the average of a [6,6] pixel array at the center of the gamepiece
@@ -69,33 +75,42 @@ class TicTacToeControl:
         # O has a grey center
         if subsetAvg > self.gsThreshold:
             # print('FOUND: X!!!')
-            return 1
+            return 'X'
         else:
             # print('FOUND: O!!!')
-            return 2
+            return 'O'
 
     def __GetImageROI__(self,imageCapture,region):
+        # Given region bounds, return a small ROI for easy circle detect
         roi = imageCapture[region[0]:region[1], region[2]:region[3]]
         return roi
 
-    def __UpdateGameboard(self,linearIndex,symbol):
-        # Need to generate xy coordinates from a single integer.
-        # Private function prevents access from outside the class
-        # First, floor divide to get the y-index.
-        y = linearIndex//3
-        # Now, get x by subtracting y*3 from linear index
-        x = linearIndex-(y*3)
-        # Now append gameboard
-        self.gameBoard[x,y] = symbol
+    def __UpdateGameboard__(self,index,symbol):
+        """
+        Uses vectorized board. Checks to ensure the board is actually empty,
+        then check to make sure the human player hasn't tried to pull a fast one
+        and change peices around
+        """
+        currentRegionValue = self.gameAI.squares[index]
+        if currentRegionValue == None:
+            self.gameAI.addMarker(index,symbol)
+            return
+        if currentRegionValue == symbol:
+            return
+        else:
+            print('CHEATER!!!!')
+            return
 
 
 if __name__ == "__main__":
-    emptyPath = r"C:\Users\Devon\Desktop\testImages\RealBlank.jpg"
+    emptyPath = r"C:\Users\hartl\Google Drive\05 - ENS Work\05 - Robotic Arm Project\Test Tic Tac Toe Images\RealBlank.jpg"
     emptyImg = cv.imread(emptyPath)
-    testImagePath = r"C:\Users\Devon\Desktop\testImages\Real2O2X.jpg"
+    testImagePath = r"C:\Users\hartl\Google Drive\05 - ENS Work\05 - Robotic Arm Project\Test Tic Tac Toe Images\Real2O2X.jpg"
     testImagePath = cv.imread(testImagePath)
     cv.imshow('BaseImage',testImagePath)
-    gameControl = TicTacToeControl()
+    gameControl = TicTacToeControl(debugFlag=True)
     gameControl.PlayfieldCalibration(emptyImg)
     gameControl.ScanSquares(testImagePath)
+    gameControl.gameAI.showBoard()
+
     cv.destroyWindow
