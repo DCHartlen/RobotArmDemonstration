@@ -1,6 +1,6 @@
 import numpy as np
 import cv2 as cv
-import GameAI as brainBox
+import GameAI as botAI
 from CalibratePlayfield import CalibratePlayfield
 
 class TicTacToeControl:
@@ -20,7 +20,53 @@ class TicTacToeControl:
     def __init__(self, debugFlag=False):
         print("started")
         self.debugFlag = debugFlag
-        self.gameAI = brainBox.GameAI()
+        self.gameBoard = botAI.Game()
+
+    def SetFirstPlayer(self,player='O'):
+        self.firstPlayer = player
+
+    def RunGameManual(self):
+        """
+        Run a game with manual interupts. Hit enter or something to continue. 
+        """
+        # Loop while the game is not complete (controlled by AI)
+        while not self.gameBoard.complete():
+            player = 'O'
+            input("HUMAN's turn. Hit enter to end")
+            # capture image of board at the end of HUMAN turn
+            # imageCapture  = something
+            # look at board and find new peice
+            self.ScanSquares(imageCapture)
+            # ScanSquares returns the location of the new token and sets gameboard
+            # print("HUMAN placed marker at {}".format(newSquare))
+
+            # Check if HUMAN finished game before passing to BOT
+            if self.gameBoard.complete():
+                break
+
+            player = 'X'
+            print("BOT is moving")
+            # BOT chooses new move
+            botMove = botAI.determineMove(self.gameBoard, player)
+            input("BOT chooses {}, Move for BOT and hit enter".format(botMove))
+            # scan image to confirm that marker is in the right spot
+            # imageCapture = something
+            self.ScanSquares(imageCapture)
+            # if new != desired: through error and try again
+            # print("BOT placed marker at {}".format(newSquare))
+
+            # Check to see if BOT ended the game before passing back to HUMAN
+            if self.gameBoard.complete():
+                break
+        
+        # Print message
+        if self.gameBoard.winner() == 'X':
+            print('BOT wins!')
+        elif self.gameBoard.winner() == 'O':
+            print('HUMAN wins!')
+        else:
+            print('Game tied...')
+
 
     def PlayfieldCalibration(self, imageCapture):
         # Create calibration object
@@ -59,7 +105,7 @@ class TicTacToeControl:
             # TODO: add logic to detect hands, say the loss of a circle
             # else:   
                 # print("empty")
-            
+
             # If debug is activated, print region to screen
             if self.debugFlag == True:
                 cv.imshow('region',currentROI)
@@ -91,9 +137,9 @@ class TicTacToeControl:
         then check to make sure the human player hasn't tried to pull a fast one
         and change peices around
         """
-        currentRegionValue = self.gameAI.squares[index]
+        currentRegionValue = self.gameBoard.squares[index]
         if currentRegionValue == None:
-            self.gameAI.addMarker(index,symbol)
+            self.gameBoard.addMarker(index,symbol)
             return
         if currentRegionValue == symbol:
             return
@@ -111,6 +157,6 @@ if __name__ == "__main__":
     gameControl = TicTacToeControl(debugFlag=True)
     gameControl.PlayfieldCalibration(emptyImg)
     gameControl.ScanSquares(testImagePath)
-    gameControl.gameAI.showBoard()
+    gameControl.gameBoard.showBoard()
 
     cv.destroyWindow

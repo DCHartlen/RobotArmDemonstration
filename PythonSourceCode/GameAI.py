@@ -4,7 +4,7 @@ Code is derived from work by Cecil Wobker
 """
 import random
 
-class GameAI:
+class Game:
     # List of all winning combos
     winningCombos = (
         [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -126,7 +126,7 @@ def getEnemy(player):
     return 'X'
 
 if __name__ == "__main__":
-    board = GameAI()
+    board = Game()
     board.showBoard()
 
     while not board.complete():
