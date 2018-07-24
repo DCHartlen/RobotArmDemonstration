@@ -141,6 +141,7 @@ if __name__ == "__main__":
             break
         player = getEnemy(player)
         computerMove = determineMove(board, player)
+        # Bots move is zero indexed
         board.addMarker(computerMove, player)
         board.showBoard()
     print("winner is", board.winner())
