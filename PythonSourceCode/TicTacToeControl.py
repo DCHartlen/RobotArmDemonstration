@@ -1,8 +1,10 @@
 import io
 import numpy as np
 from matplotlib import pyplot as plt
+# pylint:disable=E0401
 from picamera import PiCamera
 from picamera.array import PiRGBArray
+# pylint:enable=E0401
 import cv2 as cv
 import time
 import GameAI as botAI
@@ -37,6 +39,7 @@ class TicTacToeControl:
         """
         # Loop while the game is not complete (controlled by AI)
         imagePrototype = PiRGBArray(self.camera)
+        plt.ion()
         while not self.gameBoard.complete():
             player = 'X'
             input("HUMAN's turn. Hit enter to end")
@@ -47,7 +50,8 @@ class TicTacToeControl:
             plt.imshow(imageCapture)
             plt.show()
             # look at board and find new peice
-            newSquare = self.ScanSquares(imageCapture)
+            newSquare, _ = self.ScanSquares(imageCapture)
+            self.gameBoard.addMarker(newSquare,player)
             # ScanSquares returns the location of the new token and sets gameboard
             print("HUMAN placed marker at {}".format(newSquare))
             self.gameBoard.showBoard()
@@ -69,7 +73,8 @@ class TicTacToeControl:
             plt.show()
 
             # Look for new marker
-            newSquare = self.ScanSquares(imageCapture)
+            newSquare, _ = self.ScanSquares(imageCapture)
+            self.gameBoard.addMarker(newSquare,player)
             # if new != desired: through error and try again
             print("BOT placed marker at {}".format(newSquare))
             self.gameBoard.showBoard()
@@ -86,6 +91,74 @@ class TicTacToeControl:
         else:
             print('Game tied...')
 
+    def RunGameAutomatic(self):
+        """
+        Run a game that does not require user interaction
+        """
+        capturePeriod = 0.2 # in seconds
+        nCaptures = 6       # number of stationary symbols before confimation
+        iCaptures = 0       # iterations with stationary symbol
+        imagePrototype = PiRGBArray(self.camera)
+        lastIndex = None    # tracks last symbol for counter
+        # Add argument that lets computer (O) go first. Human moves first by 
+        # default
+        currentPlayer = "X"
+        # Interactive plotting
+        plt.ion()
+        while not self.gameBoard.complete():
+            if currentPlayer == 'X':
+                print("HUMAN's turn. Please add a marker to the board...")
+            else:
+                print("Please move for BOT...")
+            # look for new symbol. This is blocking. Maybe run threaded? 
+            while iCaptures<nCaptures:
+                # CaptureImage
+                imagePrototype = PiRGBArray(self.camera)
+                self.camera.capture(imagePrototype, format='bgr')
+                imageCapture = imagePrototype.array
+                # scan board for new symbols
+                newIndex, symbol = self.ScanSquares(imageCapture)
+                # if no symbol found, reset confirmation counter
+                if newIndex is None:
+                    iCaptures = 0
+                # if a symbol is found, run checks...
+                else:
+                    # If new symbol is the same as the last, increment counter
+                    if newIndex == lastIndex:
+                        lastIndex = newIndex
+                        iCaptures += 1
+                    # if the symbol is different, reset counter
+                    else:
+                        lastIndex  = newIndex
+                        iCaptures = 0
+                # wait the proscribed period. process time may be significant,
+                # a dedicated wait may not be needed.
+                # time.sleep(capturePeriod) 
+            
+            # Outside the loop only occurs if a new peice is found
+            print("New symbol found at {}".format(newIndex))
+            # Add to currentPlayer's token to gameboard and show the new board
+            self.gameBoard.addMarker(newIndex,currentPlayer)
+            self.gameBoard.showBoard()
+            # switch currentPlayer, reset counter
+            currentPlayer = botAI.getEnemy(currentPlayer)
+            iCaptures = 0
+            # if the currentPlayer is now BOT/'O', run algorithm to determine
+            # BOT's next move
+            if currentPlayer == 'O':
+                # Run a game complete check prior to bot picking move
+                if self.gameBoard.complete():
+                    break
+                botMove = botAI.determineMove(self.gameBoard,currentPlayer)
+                print("BOT choose square {} as its next move".format(botMove))
+        
+        # when the game completes, determine the winner
+        if self.gameBoard.winner() == 'O':
+            print('BOT wins!')
+        elif self.gameBoard.winner() == 'X':
+            print('HUMAN wins!')
+        else:
+            print('Game tied...')
 
     def PlayfieldCalibration(self, imageCapture):
         # Create calibration object
@@ -101,6 +174,7 @@ class TicTacToeControl:
     def ScanSquares(self,imageCapture):
         gsCapture = cv.cvtColor(imageCapture,cv.COLOR_BGR2GRAY)
         newSymbolIndex = None
+        symbol = None
         for iRegion, region in enumerate(self.regionROIs):
             # Capture only the current region from the greyscale image
             currentROI = self.__GetImageROI__(gsCapture,region)
@@ -117,24 +191,20 @@ class TicTacToeControl:
                 # Look for symbol
                 symbol = self.DetectSymbol(currentROI, tokenCenter)
                 # place symbol in the gameboard
-                foundFlag = self.__UpdateGameboard__(iRegion,symbol)
+                foundFlag = self.__CheckNew__(iRegion,symbol)
                 if foundFlag == 1:
                     newSymbolIndex = iRegion
 
                 # add circle to image for debug
                 cv.circle(currentROI, (tokenCenter[0], tokenCenter[1]), 
                     int(gamePiece[0,0,2]), (0, 255, 0), 2)
-            # If there is no piece in the square, print message
-            # TODO: add logic to detect hands, say the loss of a circle
-            # else:   
-                # print("empty")
 
             # If debug is activated, print region to screen
             if self.debugFlag == True:
                 cv.imshow('region',currentROI)
                 cv.waitKey(0)
 
-        return newSymbolIndex
+        return newSymbolIndex, symbol
 
     def DetectSymbol(self, currentROI, tokenCenter):
         # Get the average of a [6,6] pixel array at the center of the gamepiece
@@ -156,7 +226,7 @@ class TicTacToeControl:
         roi = imageCapture[region[0]:region[1], region[2]:region[3]]
         return roi
 
-    def __UpdateGameboard__(self,index,symbol):
+    def __CheckNew__(self,index,symbol):
         """
         Uses vectorized board. Checks to ensure the board is actually empty,
         then check to make sure the human player hasn't tried to pull a fast one
@@ -166,13 +236,20 @@ class TicTacToeControl:
         """
         currentRegionValue = self.gameBoard.squares[index]
         if currentRegionValue == None:
-            self.gameBoard.addMarker(index,symbol)
             return 1
         if currentRegionValue == symbol:
             return 0
         else:
             print('CHEATER!!!!')
             return 0
+    
+    # def __ShowAnnotated__(self,imageCapture,tempRegion=None,tempSymbol=None):
+    #     tempBoard = self.gameBoard.squares # create temporary gameboard
+    #     # If there is a region inputted and the corresponding region is empty,
+    #     if tempRegion is not None:
+    #         if tempBoard[tempRegion] is None:
+    #             tempBoard[tempRegion] = tempSymbol
+        
 
 
 if __name__ == "__main__":
@@ -185,4 +262,4 @@ if __name__ == "__main__":
     gameControl.PlayfieldCalibration(image)
     cv.waitKey(1)
     print('HUMAN is X, BOT is O')
-    gameControl.RunGameManual()
+    gameControl.RunGameAutomatic()
