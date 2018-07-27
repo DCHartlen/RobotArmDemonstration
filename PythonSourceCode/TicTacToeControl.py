@@ -163,7 +163,7 @@ class TicTacToeControl:
         
         # when the game completes, determine the winner
         winner, combo = self.gameBoard.declareWinner()
-        self.__ShowAnnotated__()
+        self.__ShowAnnotated__(imageCapture)
         self.__DrawWinningLine__(imageCapture,combo)
         if winner == 'O':
             print('BOT wins!')
@@ -269,14 +269,14 @@ class TicTacToeControl:
         # old markers. However the current marker does update.
         for i,e in enumerate(markerLocations):
             if tempBoard[i] == 'O':
-                centerX = self.regionROIs[i,2]+e[0]
-                centerY = self.regionROIs[i,0]+e[1]
+                centerX = self.regionROIs[i][2]+e[0]
+                centerY = self.regionROIs[i][0]+e[1]
                 cv.circle(imageCapture, 
                     (centerX, centerY),
                     int(0.70*self.outerRadii[i]), [0, 0, 225], 4)
             if tempBoard[i] == 'X':
-                centerX = self.regionROIs[i,2]+e[0]
-                centerY = self.regionROIs[i,0]+e[1]
+                centerX = self.regionROIs[i][2]+e[0]
+                centerY = self.regionROIs[i][0]+e[1]
                 radii = int(0.70*self.outerRadii[i])
                 # offset for creating inscribed X
                 offset = int(np.sqrt(0.5*radii*radii))
@@ -292,12 +292,54 @@ class TicTacToeControl:
 
     def __DrawWinningLine__(self, imageCapture, combo):
         """ Draws the winning line"""
-        index1 = combo[0]
-        index2 = combo[2]
+        pts = [[None, None],[None, None]]
+        if combo == [0, 1, 2]:
+            pts[0] = [self.regionROIs[0][2],
+                    int(0.5*(self.regionROIs[0][0]+self.regionROIs[0][1]))]
+            pts[1] = [self.regionROIs[2][3],
+                    int(0.5*(self.regionROIs[2][0]+self.regionROIs[2][1]))]
+
+        elif combo == [3, 4, 5]:
+            pts[0] = [self.regionROIs[3][2],
+                    int(0.5*(self.regionROIs[3][0]+self.regionROIs[3][1]))]
+            pts[1] = [self.regionROIs[5][3],
+                    int(0.5*(self.regionROIs[5][0]+self.regionROIs[5][1]))]
+
+        elif combo == [6, 7, 8]:
+            pts[0] = [self.regionROIs[6][2],
+                    int(0.5*(self.regionROIs[6][0]+self.regionROIs[6][1]))]
+            pts[1] = [self.regionROIs[8][3],
+                    int(0.5*(self.regionROIs[8][0]+self.regionROIs[8][1]))]
+
+        elif combo == [0, 3, 6]:
+            pts[0] = [int(0.5*(self.regionROIs[0][2]+self.regionROIs[0][3])),
+                    self.regionROIs[0][0]]
+            pts[1] = [int(0.5*(self.regionROIs[6][2]+self.regionROIs[6][3])),
+                    self.regionROIs[6][1]]
+
+        elif combo == [1, 4, 7]:
+            pts[0] = [int(0.5*(self.regionROIs[1][2]+self.regionROIs[1][3])),
+                    self.regionROIs[1][0]]
+            pts[1] = [int(0.5*(self.regionROIs[7][2]+self.regionROIs[7][3])),
+                    self.regionROIs[7][1]]
+
+        elif combo == [2, 5, 8]:
+            pts[0] = [int(0.5*(self.regionROIs[2][2]+self.regionROIs[2][3])),
+                    self.regionROIs[2][0]]
+            pts[1] = [int(0.5*(self.regionROIs[8][2]+self.regionROIs[8][3])),
+                    self.regionROIs[8][1]]
+
+        elif combo == [0, 4, 8]:
+            pts[0] = [self.regionROIs[0][2], self.regionROIs[0][0]]
+            pts[1] = [self.regionROIs[8][3], self.regionROIs[8][1]]
+
+        elif combo == [2, 4, 6]:
+            pts[0] = [self.regionROIs[2][3], self.regionROIs[2][0]]
+            pts[1] = [self.regionROIs[6][2], self.regionROIs[6][1]]
+
+        print(pts)
         cv.line(imageCapture,
-            (self.regionCenters[index1,0], self.regionCenters[index1,1]),
-            (self.regionCenters[index2,0], self.regionCenters[index2,1]), 
-            [0, 225, 225], 15)
+            (pts[0][0],pts[0][1]), (pts[1][0],pts[1][1]), [0, 225, 225], 15)
         cv.imshow("CamCapture",imageCapture)
 
 # Run the program if called directly from terminal/shell
@@ -312,4 +354,4 @@ if __name__ == "__main__":
     cv.waitKey(1)
     print('HUMAN is X, BOT is O')
     gameControl.RunGameAutomatic()
-    intput('Hit Enter to end game...')
+    input('Hit Enter to end game...')

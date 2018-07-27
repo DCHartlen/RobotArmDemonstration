@@ -1,5 +1,5 @@
 """
-Code is derived from work by Cecil Wobker 
+Code is derived from work of Cecil Wobker 
 (https://cwoebker.com/posts/tic-tac-toe)
 """
 import random
