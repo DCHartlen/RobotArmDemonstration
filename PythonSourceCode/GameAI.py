@@ -62,6 +62,22 @@ class Game:
                     return player
         return None
 
+    def declareWinner(self):
+        """ 
+        Hacky way to return winner and the winning combo. Can't use winner()
+        because the output of winner is altered by xWon() et al. 
+        """
+        for player in ('X', 'O'):
+            positions = self.getSquares(player)
+            for combo in self.winningCombos:
+                win = True
+                for pos in combo:
+                    if pos not in positions:
+                        win = False
+                if win:
+                    return player,combo
+        return None
+
     def getSquares(self, player):
         """Return all regions which belong to the current player"""
         return [k for k, v in enumerate(self.squares) if v == player]
@@ -70,22 +86,22 @@ class Game:
         """place on square on the board"""
         self.squares[position] = player
 
-    def alphaBeta(self, node, player, alpha, beta):
+    def alphaBeta(self, board, player, alpha, beta):
         """ 
         The magic: binary tree search through all possible moves to find the 
         best one. Return the best move. This function runs recursively
         """    
-        if node.complete():
-            if node.xWon():
+        if board.complete():
+            if board.xWon():
                 return -1
-            elif node.tied():
+            elif board.tied():
                 return 0
-            elif node.oWon():
+            elif board.oWon():
                 return 1
-        for move in node.availableMoves():
-            node.addMarker(move, player)
-            val = self.alphaBeta(node, getEnemy(player), alpha, beta)
-            node.addMarker(move, None)
+        for move in board.availableMoves():
+            board.addMarker(move, player)
+            val = self.alphaBeta(board, getEnemy(player), alpha, beta)
+            board.addMarker(move, None)
             if player == 'O':
                 if val > alpha:
                     alpha = val
@@ -144,4 +160,5 @@ if __name__ == "__main__":
         # Bots move is zero indexed
         board.addMarker(computerMove, player)
         board.showBoard()
-    print("winner is", board.winner())
+    print(board.declareWinner())
+    print("winner is", board.declareWinner())

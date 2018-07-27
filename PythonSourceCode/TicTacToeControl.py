@@ -13,13 +13,14 @@ from CalibratePlayfield import CalibratePlayfield
 class TicTacToeControl:
     # Define ratio of inner circle (gamepeice) to outer circle (playfield)
     ratioInnerOuter = 0.8
-
+    # Location of each marker inside the appropriate ROI
+    markerLocations = [[None,None] for i in range(9)]
     # Grayscale threshold. 255 = white, 0 = black.
     # TODO: add interactive thresholding??? Maybe adaptive thresholding???
     gsThreshold = 100
-
+    # list players
     players = ['X', 'O']
-    firstPlayer = 'X' # Robot plays as X
+    firstPlayer = 'X' # Human plays as X
 
     def __init__(self, debugFlag=False):
         print("started")
@@ -50,7 +51,7 @@ class TicTacToeControl:
             plt.imshow(imageCapture)
             plt.show()
             # look at board and find new peice
-            newSquare, _ = self.ScanSquares(imageCapture)
+            newSquare, _, _ = self.ScanSquares(imageCapture)
             self.gameBoard.addMarker(newSquare,player)
             # ScanSquares returns the location of the new token and sets gameboard
             print("HUMAN placed marker at {}".format(newSquare))
@@ -73,7 +74,7 @@ class TicTacToeControl:
             plt.show()
 
             # Look for new marker
-            newSquare, _ = self.ScanSquares(imageCapture)
+            newSquare, _, _ = self.ScanSquares(imageCapture)
             self.gameBoard.addMarker(newSquare,player)
             # if new != desired: through error and try again
             print("BOT placed marker at {}".format(newSquare))
@@ -84,10 +85,13 @@ class TicTacToeControl:
                 break
         
         # Print message
-        if self.gameBoard.winner() == 'O':
+        winner, combo = self.gameBoard.declareWinner()
+        if winner == 'O':
             print('BOT wins!')
-        elif self.gameBoard.winner() == 'X':
+            print(combo)
+        elif winner == 'X':
             print('HUMAN wins!')
+            print(combo)
         else:
             print('Game tied...')
 
@@ -103,8 +107,9 @@ class TicTacToeControl:
         # Add argument that lets computer (O) go first. Human moves first by 
         # default
         currentPlayer = "X"
-        # Interactive plotting
-        plt.ion()
+        # start opencv window thread which shows the current, annoted image
+        cv.startWindowThread()
+        cv.namedWindow("CamCapture")
         while not self.gameBoard.complete():
             if currentPlayer == 'X':
                 print("HUMAN's turn. Please add a marker to the board...")
@@ -117,7 +122,7 @@ class TicTacToeControl:
                 self.camera.capture(imagePrototype, format='bgr')
                 imageCapture = imagePrototype.array
                 # scan board for new symbols
-                newIndex, symbol = self.ScanSquares(imageCapture)
+                newIndex, symbol, newCenter = self.ScanSquares(imageCapture)
                 # if no symbol found, reset confirmation counter
                 if newIndex is None:
                     iCaptures = 0
@@ -131,6 +136,9 @@ class TicTacToeControl:
                     else:
                         lastIndex  = newIndex
                         iCaptures = 0
+
+                # Annotate and display image
+                self.__ShowAnnotated__(imageCapture,newIndex, newCenter, symbol)
                 # wait the proscribed period. process time may be significant,
                 # a dedicated wait may not be needed.
                 # time.sleep(capturePeriod) 
@@ -139,6 +147,7 @@ class TicTacToeControl:
             print("New symbol found at {}".format(newIndex))
             # Add to currentPlayer's token to gameboard and show the new board
             self.gameBoard.addMarker(newIndex,currentPlayer)
+            self.markerLocations[newIndex] = newCenter
             self.gameBoard.showBoard()
             # switch currentPlayer, reset counter
             currentPlayer = botAI.getEnemy(currentPlayer)
@@ -153,10 +162,15 @@ class TicTacToeControl:
                 print("BOT choose square {} as its next move".format(botMove))
         
         # when the game completes, determine the winner
-        if self.gameBoard.winner() == 'O':
+        winner, combo = self.gameBoard.declareWinner()
+        self.__ShowAnnotated__()
+        self.__DrawWinningLine__(imageCapture,combo)
+        if winner == 'O':
             print('BOT wins!')
-        elif self.gameBoard.winner() == 'X':
+            print(combo)
+        elif winner == 'X':
             print('HUMAN wins!')
+            print(combo)
         else:
             print('Game tied...')
 
@@ -172,15 +186,19 @@ class TicTacToeControl:
                                                  self.ratioInnerOuter))
     
     def ScanSquares(self,imageCapture):
+        # Convert image to grey scale
         gsCapture = cv.cvtColor(imageCapture,cv.COLOR_BGR2GRAY)
+        # initialize returned variables to None
         newSymbolIndex = None
         symbol = None
+        newCenter = None
+        # Iterate through all ROIs to find circles
         for iRegion, region in enumerate(self.regionROIs):
             # Capture only the current region from the greyscale image
             currentROI = self.__GetImageROI__(gsCapture,region)
             currentROI = cv.GaussianBlur(currentROI, (7,7),0)
 
-            # scan through each region looking for circles
+            # scan each region looking for circles
             gamePiece = cv.HoughCircles(currentROI,cv.HOUGH_GRADIENT, 2, 
                 self.maxInnerRadii[iRegion],
                 maxRadius=self.maxInnerRadii[iRegion])
@@ -194,17 +212,9 @@ class TicTacToeControl:
                 foundFlag = self.__CheckNew__(iRegion,symbol)
                 if foundFlag == 1:
                     newSymbolIndex = iRegion
-
-                # add circle to image for debug
-                cv.circle(currentROI, (tokenCenter[0], tokenCenter[1]), 
-                    int(gamePiece[0,0,2]), (0, 255, 0), 2)
-
-            # If debug is activated, print region to screen
-            if self.debugFlag == True:
-                cv.imshow('region',currentROI)
-                cv.waitKey(0)
-
-        return newSymbolIndex, symbol
+                    newCenter = tokenCenter
+        # If no circle is found, these variables return None            
+        return newSymbolIndex, symbol, newCenter
 
     def DetectSymbol(self, currentROI, tokenCenter):
         # Get the average of a [6,6] pixel array at the center of the gamepiece
@@ -243,15 +253,54 @@ class TicTacToeControl:
             print('CHEATER!!!!')
             return 0
     
-    # def __ShowAnnotated__(self,imageCapture,tempRegion=None,tempSymbol=None):
-    #     tempBoard = self.gameBoard.squares # create temporary gameboard
-    #     # If there is a region inputted and the corresponding region is empty,
-    #     if tempRegion is not None:
-    #         if tempBoard[tempRegion] is None:
-    #             tempBoard[tempRegion] = tempSymbol
+    def __ShowAnnotated__(self,imageCapture,tempIndex=None,tempLocation=None,tempSymbol=None):
+        # Copy board and locations for use in this function. Note, due to python
+        # variable management, if copy() isn't used, a "pointer" is passed which
+        # alter the class variable. Copy() ensure class variable isn't altered
+        tempBoard = self.gameBoard.squares.copy() # create temporary gameboard
+        markerLocations = self.markerLocations.copy()
+        # If there is a region inputted and the corresponding region is empty,
+        if tempIndex is not None:
+            if tempBoard[tempIndex] is None:
+                tempBoard[tempIndex] = tempSymbol
+                markerLocations[tempIndex] = tempLocation
         
+        # for all markers on the board, draw lines. Does not update location of
+        # old markers. However the current marker does update.
+        for i,e in enumerate(markerLocations):
+            if tempBoard[i] == 'O':
+                centerX = self.regionROIs[i,2]+e[0]
+                centerY = self.regionROIs[i,0]+e[1]
+                cv.circle(imageCapture, 
+                    (centerX, centerY),
+                    int(0.70*self.outerRadii[i]), [0, 0, 225], 4)
+            if tempBoard[i] == 'X':
+                centerX = self.regionROIs[i,2]+e[0]
+                centerY = self.regionROIs[i,0]+e[1]
+                radii = int(0.70*self.outerRadii[i])
+                # offset for creating inscribed X
+                offset = int(np.sqrt(0.5*radii*radii))
+                cv.circle(imageCapture, 
+                    (centerX, centerY),
+                    radii, [0, 225, 0], 4)
+                cv.line(imageCapture,(centerX-offset, centerY-offset),
+                    (centerX+offset, centerY+offset),[0, 225, 0], 6)
+                cv.line(imageCapture,(centerX+offset, centerY-offset),
+                    (centerX-offset, centerY+offset),[0, 225, 0], 6)
+        # Display image in named window which is being run threaded.
+        cv.imshow("CamCapture",imageCapture)
 
+    def __DrawWinningLine__(self, imageCapture, combo):
+        """ Draws the winning line"""
+        index1 = combo[0]
+        index2 = combo[2]
+        cv.line(imageCapture,
+            (self.regionCenters[index1,0], self.regionCenters[index1,1]),
+            (self.regionCenters[index2,0], self.regionCenters[index2,1]), 
+            [0, 225, 225], 15)
+        cv.imshow("CamCapture",imageCapture)
 
+# Run the program if called directly from terminal/shell
 if __name__ == "__main__":
     gameControl = TicTacToeControl()
     input('Clear game board and hit Enter to start...')
@@ -263,3 +312,4 @@ if __name__ == "__main__":
     cv.waitKey(1)
     print('HUMAN is X, BOT is O')
     gameControl.RunGameAutomatic()
+    intput('Hit Enter to end game...')
