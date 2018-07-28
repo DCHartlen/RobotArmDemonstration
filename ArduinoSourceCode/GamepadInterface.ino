@@ -36,9 +36,9 @@ void DirectGamepadControl(){
 
             // Actuate servos an increment based on gamepad 
             for(int i = 0; i < degreesOfFreedom; i++){
-                ControlServos[i].currentAngle = ControlServos[i].currentAngle+
+                RobotServos[i].currentAngle = RobotServos[i].currentAngle+
                 (commandArray[i]/updateHz*2);
-                ActuateServo(ControlServos[i], ControlServos[i].currentAngle);
+                ActuateServo(RobotServos[i], RobotServos[i].currentAngle);
             }
             // report ready
             ReportReady();
@@ -71,10 +71,10 @@ void CartesianGamepadControl(){
             x = x+(commandArray[0]/updateHz*4);
             y = y+(commandArray[1]/updateHz*4);
             z = z+(commandArray[2]/updateHz*4);
-            ControlServos[ServoClaw].currentAngle = 
-                ControlServos[ServoClaw].currentAngle+(commandArray[3]/updateHz*2);
+            RobotServos[ServoClaw].currentAngle = 
+                RobotServos[ServoClaw].currentAngle+(commandArray[3]/updateHz*2);
             BasicMove(x,y,z);
-            ActuateServo(ControlServos[ServoClaw],ControlServos[ServoClaw].currentAngle);
+            ActuateServo(RobotServos[ServoClaw],RobotServos[ServoClaw].currentAngle);
  
             // report ready
             ReportReady();

@@ -86,14 +86,14 @@ int MoveIK(double x, double y, double z, double &shoulderAngle, double &elbowAng
     baseAngle = aValue;
 
     // In each servo object, set the current angle
-    ControlServos[ServoBase].currentAngle = baseAngle;
-    ControlServos[ServoShoulder].currentAngle = shoulderAngle;
+    RobotServos[ServoBase].currentAngle = baseAngle;
+    RobotServos[ServoShoulder].currentAngle = shoulderAngle;
     // The elbow is a special case. As the elbow is controlled from the shoulder,
     // it requires the additonon of the current shoulder angle to compensate
-    ControlServos[ServoElbow].currentAngle = elbowAngle+ControlServos[ServoShoulder].currentAngle;
+    RobotServos[ServoElbow].currentAngle = elbowAngle+RobotServos[ServoShoulder].currentAngle;
     
     // Move all servos, minus the claw
     for (int iServo = 0; iServo < degreesOfFreedom-1; iServo++) {
-        ActuateServo(ControlServos[iServo], ControlServos[iServo].currentAngle);
+        ActuateServo(RobotServos[iServo], RobotServos[iServo].currentAngle);
     }
 }

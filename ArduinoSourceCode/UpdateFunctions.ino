@@ -1,14 +1,14 @@
 void updateCalibrationMode(){
     // Update currently selected servo's raw value with encoder
-    ControlServos[currentJointControlled].currentRaw = 
-        ControlServos[currentJointControlled].currentRaw + controlEncoder.read();
+    RobotServos[currentJointControlled].currentPwm = 
+        RobotServos[currentJointControlled].currentPwm + controlEncoder.read()*2;
     // Reset encoder tick counter to zero to prevent spiral out of control
     controlEncoder.write(0);
 
-    // update all servos to currentRaw, not just the only one selected. Helps 
+    // update all servos to currentPwm, not just the only one selected. Helps 
     // with stability, I think
     for(int iServo=0; iServo < degreesOfFreedom; iServo++) {
-        ControlServos[iServo].ServoObj.write(ControlServos[iServo].currentRaw);
+        RobotServos[iServo].ServoControl.writeMicroseconds(RobotServos[iServo].currentPwm);
     }
 
 }
@@ -16,14 +16,14 @@ void updateCalibrationMode(){
 void updateDirectEncoderControl(){
     // Use encoder to control the currently selected servo's angle. Encoder has
     // four ints per tick, so divide by for. each tick is a degree. 
-    ControlServos[currentJointControlled].currentAngle = 
-        ControlServos[currentJointControlled].currentAngle + controlEncoder.read()/4;
+    RobotServos[currentJointControlled].currentAngle = 
+        RobotServos[currentJointControlled].currentAngle + controlEncoder.read()/4;
     // Reset encoder
     controlEncoder.write(0);
 
     // Update all servos
     for(int iServo=0; iServo < degreesOfFreedom; iServo ++) {
-        ActuateServo(ControlServos[iServo], ControlServos[iServo].currentAngle);
+        ActuateServo(RobotServos[iServo], RobotServos[iServo].currentAngle);
     }
 };
 
@@ -54,8 +54,8 @@ void updateCartesianEncoderControl() {
     MoveIK(x,y,z,shoulderAngle,elbowAngle,baseAngle);
 
     // Actuate the claw
-    ControlServos[ServoClaw].currentAngle = clawAngle;
-    ActuateServo(ControlServos[ServoClaw],ControlServos[ServoClaw].currentAngle);
+    RobotServos[ServoClaw].currentAngle = clawAngle;
+    ActuateServo(RobotServos[ServoClaw], RobotServos[ServoClaw].currentAngle);
 
 
 }

@@ -46,7 +46,7 @@ void printCurrentLocation() {
   outputCode("X",x);
   outputCode("Y",y);
   outputCode("Z",z);
-  outputCode("C",ControlServos[ServoClaw].currentAngle);
+  outputCode("C",RobotServos[ServoClaw].currentAngle);
   outputCode("F",feedRate);
   Serial.println(flagAbsolute?"ABS":"REL");
 } 
@@ -164,7 +164,7 @@ void ExecuteCommand() {
             break;
         // Case M106: Actuate the claw
         case 106: 
-            ActuateServo(ControlServos[ServoClaw], ParseCommandComponent('S',ControlServos[ServoClaw].currentAngle));
+            ActuateServo(RobotServos[ServoClaw], ParseCommandComponent('S',RobotServos[ServoClaw].currentAngle));
             break;
         // Case M114: Print current location
         case 114:  
