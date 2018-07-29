@@ -66,6 +66,7 @@ void setup() {
     // Define constants for encoder button to acknowlege click and double Click
     encoderBtn.setDebounceTicks(20);
     encoderBtn.setClickTicks(300);
+    // These two lines attaches external interupts which define actions for clicking
     encoderBtn.attachDoubleClick(doubleClick);
     encoderBtn.attachClick(singleClick);
 
@@ -84,7 +85,6 @@ void setup() {
 
 void loop() {
     currentMillis = millis();
-
     // Define a high speed loop which track encoder ticks
     if ((currentMillis-lastEncoderMillis) > encoderFreq) {
         lastEncoderMillis = currentMillis;  // update time tracker for next iteration
@@ -94,7 +94,7 @@ void loop() {
     }
 
     // Define the control update loop
-    if ((currentMillis=lastUpdateMillis) > updateFreq) {
+    if ((currentMillis-lastUpdateMillis) > updateFreq) {
         lastUpdateMillis = currentMillis;
         // Run update function for the given operating mode
         OperatingModes[currentMode].ModeUpdate();
@@ -113,7 +113,6 @@ void loop() {
         // Update the lcd screen
         OperatingModes[currentMode].LCDMessageUpdate();
     }
-
 }
 
 void doubleClick() {
