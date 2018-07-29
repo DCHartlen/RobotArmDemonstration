@@ -16,12 +16,9 @@
 #include "Kinematics.h"     // Math for inverse kinematics
 
 // Define digital pins for encoder
-#define encoderPinA 11
-#define encoderPinB 12
+#define encoderPinA   11
+#define encoderPinB   12
 #define encoderPinBtn 13
-
-// Define constants
-long countEncoderTicks = 0; // counts number of encoder turns
 
 // define encoder object
 Encoder controlEncoder(encoderPinA,encoderPinB);
@@ -30,13 +27,15 @@ Encoder controlEncoder(encoderPinA,encoderPinB);
 OneButton encoderBtn(encoderPinBtn, true);
 
 // Define loop timing information (freq and timers)
-unsigned long currentMillis = 0;    // Tracks current time
+unsigned long currentMillis = 0;        // Tracks current time
 unsigned long lastEncoderMillis = 0;    // Time of last encoder timer
 unsigned long lastUpdateMillis = 0;     // Time of last control update
-unsigned long lastSerialMillis = 0;    // Time of last Serial update
-int encoderFreq = 2;     // freqency at which encoder is polled (2ms)
-int updateFreq = 10;      // frequency at which commands are updated (10ms)
-int SerialFreq = 40;      // Freqncy at which serial update (40ms)
+unsigned long lastSerialMillis = 0;     // Time of last Serial update
+unsigned long lastLcdMillis = 0;        // TIme of last LCD update
+int encoderFreq = 2;    // Period at which encoder is polled (2ms)
+int updateFreq = 10;    // Period at which commands are updated (10ms)
+int serialFreq = 40;    // Period at which serial update (40ms)
+int lcdFreq = 200;      // Period at which LCD is updated (200ms)  
 
 // Define mode and joint counters
 int currentMode = 0;  // Defines operating mode that system boots into at startup
@@ -86,7 +85,7 @@ void setup() {
 void loop() {
     currentMillis = millis();
 
-    // Define a high speed encoder loop that tracks encoder button presses and turns
+    // Define a high speed loop which track encoder ticks
     if ((currentMillis-lastEncoderMillis) > encoderFreq) {
         lastEncoderMillis = currentMillis;  // update time tracker for next iteration
 
@@ -94,20 +93,40 @@ void loop() {
         encoderBtn.tick(); 
     }
 
-    // TODO: add update functions.
+    // Define the control update loop
+    if ((currentMillis=lastUpdateMillis) > updateFreq) {
+        lastUpdateMillis = currentMillis;
+        // Run update function for the given operating mode
+        OperatingModes[currentMode].ModeUpdate();
+    }
+
+    // Define the serial update loop
+    if ((currentMillis-lastSerialMillis) > serialFreq) {
+        lastSerialMillis = currentMillis;
+        // print data to serial as appropriate for given mode
+        OperatingModes[currentMode].ModeSerialDebug();
+    }
+
+    // Define slow speed LCD update to avoid flicker
+    if ((currentMillis-lastLcdMillis) > lcdFreq) {
+        lastLcdMillis = currentMillis;
+        // Update the lcd screen
+        OperatingModes[currentMode].LCDMessageUpdate();
+    }
 
 }
 
 void doubleClick() {
     Serial.println("DOUBLE CLICK!!");
     currentMode++;  // Increment Mode
-    currentMode = currentMode%nModes;   // modulus to ensure mode is always within available number
-    OperatingModes[currentMode].ModeInitialization; // Run mode initialization
+    currentMode = currentMode % nModes;   // modulus to ensure mode is always within available number
+    OperatingModes[currentMode].ModeInitialization(); // Run mode initialization
     currentJointControlled = 0; // Reset joint control
+    Screen.clear(); // Clear the lcd screen
 }
 
 void singleClick() {
     Serial.println("Single click");
     currentJointControlled++;   // Cycle through joints to cotrol. Same modulus control above.
-    currentJointControlled = currentJointControlled%degreesOfFreedom;
+    currentJointControlled = currentJointControlled % degreesOfFreedom;
 }

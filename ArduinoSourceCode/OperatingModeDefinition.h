@@ -18,7 +18,7 @@ struct ModePrototype{
     objectFunction LCDMessageUpdate;
 };
 
-void doNothingMode (){
+void doNothingMode(){
   
 }
 
