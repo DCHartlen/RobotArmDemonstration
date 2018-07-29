@@ -8,6 +8,7 @@
 #include "UpdateFunctions.h"    // Defines controller updates for all operating modes
 #include "GCodeModule.h"    // gcode parser
 #include "GamepadInterface.h"   // gamepad interface and controls
+#include "SerialDebug.h"    // debug messages printed to serial monitor.
 #include "OperatingModeDefinition.h"    // defines all operating modes
 #include "Kinematics.h"     // Math for inverse kinematics
 
