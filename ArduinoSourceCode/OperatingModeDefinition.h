@@ -15,7 +15,7 @@ struct ModePrototype{
     objectFunction ModeInitialization;
     objectFunction ModeUpdate;
     objectFunction ModeSerialDebug;
-    // objectFunction LCDMessageUpdate;
+    objectFunction LCDMessageUpdate;
 };
 
 void doNothingMode (){
@@ -34,49 +34,49 @@ void setupOperatingModes() {
     OperatingModes[0].ModeInitialization = setupCalibrationMode;
     OperatingModes[0].ModeUpdate = updateCalibrationMode;
     OperatingModes[0].ModeSerialDebug = SerialServoAngles;
-    // OperatingModes[0].LCDMessageUpdate = 
+    OperatingModes[0].LCDMessageUpdate = LCDCalibration;
 
     // Mode 2 (1): Directly control the angle of the servo using the encoder
     OperatingModes[1].ModeName = "DirectEncoderControl";
     OperatingModes[1].ModeInitialization = setupDirectEncoderControl;
     OperatingModes[1].ModeUpdate = updateDirectEncoderControl;
     OperatingModes[1].ModeSerialDebug = SerialServoAngles;
-    // OperatingModes[1].LCDMessageUpdate =
+    OperatingModes[1].LCDMessageUpdate = LCDDirectEncoder;
 
     // Mode 3 (2): Directly control manipulator position using the encoder
     OperatingModes[2].ModeName = "CartesianEncoderControl";
     OperatingModes[2].ModeInitialization = setupCartesianEncoderControl;
     OperatingModes[2].ModeUpdate = updateCartesianEncoderControl;
     OperatingModes[2].ModeSerialDebug = SerialCartesian;
-    // OperatingModes[2].LCDMessageUpdate =
+    OperatingModes[2].LCDMessageUpdate = LCDCartesianEncoder;
 
     // Mode 4 (3): G-Code control
     OperatingModes[3].ModeName = "GCodeControl";
     OperatingModes[3].ModeInitialization = setupGCodeControl; // found in GCodeModule
     OperatingModes[3].ModeUpdate = GCodeControl;    // found in GCodeControl
     OperatingModes[3].ModeSerialDebug = doNothingMode;
-    // OperatingModes[3].LCDMessageUpdate =
+    OperatingModes[3].LCDMessageUpdate = LCDGCodeControl;
 
-    // Mode 5 (4): Joystick Joint Control
+    // Mode 5 (4): Gamepad Control of joints
     OperatingModes[4].ModeName = "DirectGamepadControl";
     OperatingModes[4].ModeInitialization = setupGamepadControl; // TODO: joystick  joint control
     OperatingModes[4].ModeUpdate = DirectGamepadControl;
     OperatingModes[4].ModeSerialDebug = doNothingMode;
-    // OperatingModes[4].LCDMessageUpdate =
+    OperatingModes[4].LCDMessageUpdate = LCDDirectGamepad;
 
-    // Mode 6 (5): Joystick Cartesian Control
+    // Mode 6 (5): Gamepad Control of location
     OperatingModes[5].ModeName = "CartesianGamepadControl";
     OperatingModes[5].ModeInitialization = setupGamepadControl; // TODO: joystick Cartesian control 
     OperatingModes[5].ModeUpdate = CartesianGamepadControl;
     OperatingModes[5].ModeSerialDebug = doNothingMode;
-    // OperatingModes[5].LCDMessageUpdate =
+    OperatingModes[5].LCDMessageUpdate = LCDCartesianGamepad;
 
     // Mode 7 (6): Mode for Tic-Tac-Toe (which is controlled using gcode)
     OperatingModes[6].ModeName = "TicTacToeMode";
     OperatingModes[6].ModeInitialization = setupGCodeControl; // found in GCodeModule
     OperatingModes[6].ModeUpdate = GCodeControl;    // found in GCodeControl
     OperatingModes[6].ModeSerialDebug = doNothingMode;
-    // OperatingModes[6].LCDMessageUpdate =
+    OperatingModes[6].LCDMessageUpdate = LCDTicTacToeControl;
 }
 
 

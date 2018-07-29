@@ -2,12 +2,15 @@
 
 #include <Encoder.h>    // Encoder controls
 #include <Servo.h>      // Servo Controlls
-#include <OneButton.h>    // Button debounce controls
-#include "ServoFunctions.h"   // Defines each servo used in arm
+#include <OneButton.h>  // Button debounce controls
+#include <Wire.h>       // I2C used for lcd screen
+#include <LiquidCrystal_I2C.h>          // Control LCD screen
+#include "ServoFunctions.h" // Defines each servo used in arm
 #include "InitializationFunctions.h"    // defines all mode setup functions
-#include "UpdateFunctions.h"    // Defines controller updates for all operating modes
+#include "UpdateFunctions.h"// Defines controller updates for all operating modes
 #include "GCodeModule.h"    // gcode parser
-#include "GamepadInterface.h"   // gamepad interface and controls
+#include "GamepadInterface.h"           // gamepad interface and controls
+#include "LCDMessages.h"    // Messages printed to the LCD screen
 #include "SerialDebug.h"    // debug messages printed to serial monitor.
 #include "OperatingModeDefinition.h"    // defines all operating modes
 #include "Kinematics.h"     // Math for inverse kinematics
@@ -73,6 +76,11 @@ void setup() {
     setupOperatingModes();
     // "Boot" into whatever mode is specified by currentMode
     OperatingModes[currentMode].ModeInitialization();
+
+    // Setup LCD screen
+    Screen.init();
+    Screen.backlight();
+    Screen.clear();
 }
 
 void loop() {
