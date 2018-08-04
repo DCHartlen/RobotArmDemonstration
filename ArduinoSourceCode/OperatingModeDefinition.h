@@ -59,14 +59,14 @@ void setupOperatingModes() {
 
     // Mode 5 (4): Gamepad Control of joints
     OperatingModes[4].ModeName = "DirectGamepadControl";
-    OperatingModes[4].ModeInitialization = setupGamepadControl; // TODO: joystick  joint control
+    OperatingModes[4].ModeInitialization = setupGamepadControl; 
     OperatingModes[4].ModeUpdate = DirectGamepadControl;
     OperatingModes[4].ModeSerialDebug = doNothingMode;
     OperatingModes[4].LCDMessageUpdate = LCDDirectGamepad;
 
     // Mode 6 (5): Gamepad Control of location
     OperatingModes[5].ModeName = "CartesianGamepadControl";
-    OperatingModes[5].ModeInitialization = setupGamepadControl; // TODO: joystick Cartesian control 
+    OperatingModes[5].ModeInitialization = setupGamepadControl; 
     OperatingModes[5].ModeUpdate = CartesianGamepadControl;
     OperatingModes[5].ModeSerialDebug = doNothingMode;
     OperatingModes[5].LCDMessageUpdate = LCDCartesianGamepad;

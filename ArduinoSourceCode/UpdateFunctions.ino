@@ -1,7 +1,6 @@
 void updateCalibrationMode(){
     // Update currently selected servo's raw value with encoder
-    RobotServos[currentJointControlled].currentPwm = 
-        RobotServos[currentJointControlled].currentPwm + controlEncoder.read()*2;
+    RobotServos[currentJointControlled].currentPwm += controlEncoder.read()*4;
     // Reset encoder tick counter to zero to prevent spiral out of control
     controlEncoder.write(0);
 
@@ -16,8 +15,7 @@ void updateCalibrationMode(){
 void updateDirectEncoderControl(){
     // Use encoder to control the currently selected servo's angle. Encoder has
     // four ints per tick, so divide by for. each tick is a degree. 
-    RobotServos[currentJointControlled].currentAngle = 
-        RobotServos[currentJointControlled].currentAngle + controlEncoder.read()/4;
+    RobotServos[currentJointControlled].currentAngle += float(controlEncoder.read())/4.0;
     // Reset encoder
     controlEncoder.write(0);
 
@@ -33,22 +31,20 @@ void updateCartesianEncoderControl() {
     // Based on "currentJointControlled", choose DoF to increment
     switch(currentJointControlled){
         case 0:     // x direction control
-            x = x + controlEncoder.read();
-            controlEncoder.write(0);
+            x += controlEncoder.read();
             break;
         case 1:     // y direction control
-            y = y + controlEncoder.read();
-            controlEncoder.write(0);
+            y += controlEncoder.read();
             break;
         case 2:     // z direction control
-            z = z + controlEncoder.read();
-            controlEncoder.write(0);
+            z += controlEncoder.read();
             break;
         case 3:     // Claw control
-            clawAngle = clawAngle + controlEncoder.read();
-            controlEncoder.write(0);
+            clawAngle += controlEncoder.read();
             break;
     }
+    // reset encoder to prevent runaway
+    controlEncoder.write(0);
 
     // Move all joints using inverse kinematics
     MoveIK(x,y,z,shoulderAngle,elbowAngle,baseAngle);
@@ -56,6 +52,4 @@ void updateCartesianEncoderControl() {
     // Actuate the claw
     RobotServos[ServoClaw].currentAngle = clawAngle;
     ActuateServo(RobotServos[ServoClaw], RobotServos[ServoClaw].currentAngle);
-
-
 }

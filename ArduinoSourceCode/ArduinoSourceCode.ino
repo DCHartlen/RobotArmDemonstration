@@ -16,8 +16,8 @@
 #include "Kinematics.h"     // Math for inverse kinematics
 
 // Define digital pins for encoder
-#define encoderPinA   11
-#define encoderPinB   12
+#define encoderPinA   2
+#define encoderPinB   3
 #define encoderPinBtn 13
 
 // define encoder object
@@ -33,9 +33,9 @@ unsigned long lastUpdateMillis = 0;     // Time of last control update
 unsigned long lastSerialMillis = 0;     // Time of last Serial update
 unsigned long lastLcdMillis = 0;        // TIme of last LCD update
 int encoderFreq = 2;    // Period at which encoder is polled (2ms)
-int updateFreq = 10;    // Period at which commands are updated (10ms)
-int serialFreq = 40;    // Period at which serial update (40ms)
-int lcdFreq = 200;      // Period at which LCD is updated (200ms)  
+int updateFreq = 20;    // Period at which commands are updated (10ms)
+int serialFreq = 100;   // Period at which serial update (40ms)
+int lcdFreq = 250;      // Period at which LCD is updated (200ms)  
 
 // Define mode and joint counters
 int currentMode = 0;  // Defines operating mode that system boots into at startup
@@ -81,6 +81,8 @@ void setup() {
     Screen.init();
     Screen.backlight();
     Screen.clear();
+    // Pause for effect?
+    delay(2000);
 }
 
 void loop() {
@@ -116,7 +118,6 @@ void loop() {
 }
 
 void doubleClick() {
-    Serial.println("DOUBLE CLICK!!");
     currentMode++;  // Increment Mode
     currentMode = currentMode % nModes;   // modulus to ensure mode is always within available number
     OperatingModes[currentMode].ModeInitialization(); // Run mode initialization
@@ -125,7 +126,6 @@ void doubleClick() {
 }
 
 void singleClick() {
-    Serial.println("Single click");
     currentJointControlled++;   // Cycle through joints to cotrol. Same modulus control above.
     currentJointControlled = currentJointControlled % degreesOfFreedom;
 }

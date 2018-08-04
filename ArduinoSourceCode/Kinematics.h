@@ -31,9 +31,6 @@ int InverseKinematicsMath(double rValue, double hValue, double &shoulderAngle, d
     compoundShoulderAng1= asin((upperArmLength*sin(elbowAngle))/radius);
     compoundShoulderAng2= atan(hValue/rValue);
 
-    //Serial.println (compoundShoulderAng1);
-    //Serial.println (compoundShoulderAng2);
-
     shoulderAngle=(compoundShoulderAng1+compoundShoulderAng2)*180/M_PI;
     elbowAngle=elbowAngle*180/M_PI;
  

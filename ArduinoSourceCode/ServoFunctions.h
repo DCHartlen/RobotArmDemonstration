@@ -29,19 +29,22 @@ ServoObj RobotServos [degreesOfFreedom];
 // Set a servo to a particular angle. Calls ServoBoundCheck to ensure that only
 // valid angles are set. Returns an error code if bounds exceeded and sets servo
 // max/min angle. 
-int ActuateServo(ServoObj servo, float proposedAngle);
+int ActuateServo(ServoObj &servo, float proposedAngle);
 
 // Given a servo and angle, assign raw servo value (pointer) and return error code
 // code 1: angle exceeds maximum safe angle. code -1: servo exceed minimum bounds
 int ServoBoundCheck(ServoObj servo, float servoAngle, int &rawServoValue);
+
+int InterpolatePwm(float inputAngle, ServoObj servo);
+float InterpolateAngle(int inputPwm, ServoObj servo);
 
 void setupControlServos(){
     // During calibration, move arm to the calAngle1 and angle 2 positions. Read in
     // actual raw value and set in the appropriate area below. 
 
     // Base servo
-    RobotServos[ServoBase].pin = 10;
-    RobotServos[ServoBase].lwrPwmBound = 654;
+    RobotServos[ServoBase].pin = 8;
+    RobotServos[ServoBase].lwrPwmBound = 550;
     RobotServos[ServoBase].UppPwmBound = 2400;
     RobotServos[ServoBase].calPwm1 = 1499;
     RobotServos[ServoBase].calAngle1 = 90; // Calibration loation: Straight forward
@@ -56,9 +59,9 @@ void setupControlServos(){
 
 
     // Shoulder servo
-    RobotServos[ServoShoulder].pin = 9;
-    RobotServos[ServoShoulder].lwrPwmBound = 841;
-    RobotServos[ServoShoulder].UppPwmBound = 2248;
+    RobotServos[ServoShoulder].pin = 7;
+    RobotServos[ServoShoulder].lwrPwmBound = 550;
+    RobotServos[ServoShoulder].UppPwmBound = 2400;
     RobotServos[ServoShoulder].calPwm1 = 1887;
     RobotServos[ServoShoulder].calAngle1 = 180;  // Calibration: shoulder parallel to ground
     RobotServos[ServoShoulder].calPwm2 = 865;
@@ -72,7 +75,7 @@ void setupControlServos(){
 
         // Elbow servo
     RobotServos[ServoElbow].pin = 6;
-    RobotServos[ServoElbow].lwrPwmBound = 600;
+    RobotServos[ServoElbow].lwrPwmBound = 550;
     RobotServos[ServoElbow].UppPwmBound = 2400;
     RobotServos[ServoElbow].calPwm1 = 2400;
     RobotServos[ServoElbow].calAngle1 = 0;   // Calibration: Elbow crank parallel to ground
@@ -87,7 +90,7 @@ void setupControlServos(){
 
         // Claw servo
     RobotServos[ServoClaw].pin = 5;
-    RobotServos[ServoClaw].lwrPwmBound = 800;
+    RobotServos[ServoClaw].lwrPwmBound = 550;
     RobotServos[ServoClaw].UppPwmBound = 2400;
     RobotServos[ServoClaw].calPwm1 = 2400;
     RobotServos[ServoClaw].calAngle1 = 0;    // Calibration: Claw fully closed
