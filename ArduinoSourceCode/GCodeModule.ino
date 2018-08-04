@@ -212,3 +212,11 @@ void setupGCodeControl(){
   printCurrentLocation();
   ReportReady();
 }
+
+void setupTicTacToeControl(){
+  Serial.println("Tic Tac Toe Mode Activated. Awaiting Commands...");
+  // move to home position
+  LinearMove(0,80,0,1000);
+  printCurrentLocation();
+  ReportReady();
+}

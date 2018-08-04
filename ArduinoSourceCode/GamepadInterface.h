@@ -5,8 +5,11 @@
 
 float updateHz = 1000/10;   // used to scale inputs to ##/s. Manually set 10
 
-// initialization for gamepad (shared)
-void setupGamepadControl();
+// initialization for direct control of servos with gamepad
+void setupDirectGamepadControl();
+
+// initialization for cartesian control of robot arm with gamepad
+void setupCartesianGamepadControl();
 
 // "update" function for direct gamepad controls
 void DirectGamepadControl();

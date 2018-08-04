@@ -82,8 +82,15 @@ void CartesianGamepadControl(){
     }
 }
 
-void setupGamepadControl(){
-  Serial.println("Gamepad Control Initialized");
+void setupDirectGamepadControl(){
+  Serial.println("Direct Gamepad Control Initialized");
+  // move to home position
+  LinearMove(0,80,0,1000);
+  ReportReady();
+}
+
+void setupCartesianGamepadControl(){
+  Serial.println("Cartesian Gamepad Control Initialized");
   // move to home position
   LinearMove(0,80,0,1000);
   ReportReady();

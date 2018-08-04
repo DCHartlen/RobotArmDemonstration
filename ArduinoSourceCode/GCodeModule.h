@@ -5,8 +5,10 @@ char serialBuffer[bufferLength];
 int currentBufferLength;
 float feedRate = 1000;
 
-// initialization fuction for gcode control
+// initialization function for gcode control
 void setupGCodeControl();
+// initialization for tic tac toe
+void setupTicTacToeControl();
 // "update" function for gcode control
 void GCodeControl();
 // print the current location of the manipulator

@@ -1,10 +1,10 @@
 // TODO: add header information
-void SerialServoAngles(){
+void SerialCalibrationMode(){
     // displays current servo, angle, and pulse width
-    Serial.print("Servo: ");
+    Serial.print("Calibration: Servo: ");
     switch(currentJointControlled) {
         case 0: {
-            Serial.print("Base    ");
+            Serial.print("Base");
             break;
         }
         case 1: {
@@ -12,11 +12,11 @@ void SerialServoAngles(){
             break;
         }
         case 2: {
-            Serial.print("Elbow   ");
+            Serial.print("Elbow");
             break;
         }
         case 3: {
-            Serial.print("Claw    ");
+            Serial.print("Claw");
             break;
         }
     }
@@ -26,62 +26,58 @@ void SerialServoAngles(){
     Serial.println(RobotServos[currentJointControlled].currentAngle);
 }
 
-void SerialCartesian(){
+void SerialDirectEncoder(){
     // displays current servo, angle, and pulse width
-    Serial.print("DOF: ");
+    Serial.print("Direct Encoder: Servo: ");
     switch(currentJointControlled) {
         case 0: {
-            Serial.print("X   ");
-            Serial.print(" Value: ");
-            Serial.println(x);
-            break;
-        }
-        case 1: {
-            Serial.print("Y   ");
-            Serial.print(" Value: ");
-            Serial.println(y);
-            break;
-        }
-        case 2: {
-            Serial.print("Z   ");
-            Serial.print(" Value: ");
-            Serial.println(z);
-            break;
-        }
-        case 3: {
-            Serial.print("Claw");
-            Serial.print(" Value: ");
-            Serial.println(clawAngle);
-            break;
-        }
-    }
-}
-
-void SerialJOintAngle(){
-    // displays current servo, angle, and pulse width
-    Serial.print("Joint: ");
-    switch(currentJointControlled) {
-        case 0: {
-            Serial.print("Base    ");
-            Serial.print(" Value: ");
-            Serial.println(baseAngle);
+            Serial.print("Base");
             break;
         }
         case 1: {
             Serial.print("Shoulder");
-            Serial.print(" Value: ");
-            Serial.println(shoulderAngle);
             break;
         }
         case 2: {
-            Serial.print("Elbow   ");
-            Serial.print(" Value: ");
-            Serial.println(elbowAngle);
+            Serial.print("Elbow");
             break;
         }
         case 3: {
-            Serial.print("Claw    ");
-            Serial.print(" Value: ");
+            Serial.print("Claw");
+            break;
+        }
+    }
+    Serial.print("  PWM: ");
+    Serial.print(RobotServos[currentJointControlled].currentPwm);
+    Serial.print("  Angle: ");
+    Serial.println(RobotServos[currentJointControlled].currentAngle);
+}
+
+void SerialCartesianEncoder(){
+    // displays current servo, angle, and pulse width
+    Serial.print("Cartesian Encoder: DOF: ");
+    switch(currentJointControlled) {
+        case 0: {
+            Serial.print("X  ");
+            Serial.print("Value: ");
+            Serial.println(x);
+            break;
+        }
+        case 1: {
+            Serial.print("Y  ");
+            Serial.print("Value: ");
+            Serial.println(y);
+            break;
+        }
+        case 2: {
+            Serial.print("Z  ");
+            Serial.print("Value: ");
+            Serial.println(z);
+            break;
+        }
+        case 3: {
+            Serial.print("Claw  ");
+            Serial.print("Value: ");
             Serial.println(clawAngle);
             break;
         }
