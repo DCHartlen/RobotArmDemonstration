@@ -1,3 +1,4 @@
+#TODO: add documentation
 import io
 import numpy as np
 from matplotlib import pyplot as plt
@@ -9,9 +10,10 @@ import cv2 as cv
 import time
 import GameAI as botAI
 from CalibratePlayfield import CalibratePlayfield
+import SerialInterface as coms
 
 class TicTacToeControl:
-    # Define ratio of inner circle (gamepeice) to outer circle (playfield)
+    # Define ratio of inner circle (gamepiece) to outer circle (playfield)
     ratioInnerOuter = 0.8
     # Location of each marker inside the appropriate ROI
     markerLocations = [[None,None] for i in range(9)]
@@ -22,6 +24,34 @@ class TicTacToeControl:
     players = ['X', 'O']
     firstPlayer = 'X' # Human plays as X
 
+    # Coordinates of the computers gamepiece bank. Specifically, lists containing
+    # the (x,y,z) position of all pieces in the bank. 
+    bankCoordinates = [
+        [1, 1, 1],
+        [2, 2, 1],
+        [3, 3, 1],
+        [4, 4, 1],
+        [5, 5, 1],
+    ]
+
+    # Home coordinates for the robot arm. Out of the way of the camera. Maybe
+    # over top the gamepiece bank?
+    homeCoordinates = [2,2,5]
+
+    # Coordinates of all game squares. These coordinates are different from
+    # calibration coordinates as they are in mm and relative to the robotic arm
+    squareCoordinates = [
+        [1, 1, 1],
+        [1, 2, 1],
+        [1, 3, 1],
+        [2, 1, 1],
+        [2, 2, 1],
+        [2, 3, 1],
+        [3, 1, 1],
+        [3, 2, 1],
+        [3, 3, 1],
+    ]
+
     def __init__(self, debugFlag=False):
         print("started")
         self.debugFlag = debugFlag
@@ -29,14 +59,98 @@ class TicTacToeControl:
         self.camera = PiCamera()
         self.camera.resolution = (800,800)
         self.camera.rotation = 180
-        rawCapture = PiRGBArray(self.camera)
+        PiRGBArray(self.camera) #FIXME: removed variable as it caused linting error. Required?
 
-    def SetFirstPlayer(self,player='X'):
-        self.firstPlayer = player
+    def __StartSerial__(self, port=0):
+        """ Starts serial communication with arduino"""
+        self.serial = coms.SerialInterface(port)
 
-    def RunGameManual(self):
+    def RunGame(self):
+        """
+        Start an automated game were the HUMAN and BOT move thier own peices.
+        """
+        # capturePeriod = 0.2 # in seconds
+        nCaptures = 6       # number of stationary symbols before confimation
+        iCaptures = 0       # iterations with stationary symbol
+        imagePrototype = PiRGBArray(self.camera)
+        lastIndex = None    # tracks last symbol for counter
+        # TODO: Add argument that lets computer (O) go first. Human moves first by 
+        # default
+        currentPlayer = self.firstPlayer
+        # start opencv window thread which shows the current, annoted image
+        cv.startWindowThread()
+        cv.namedWindow("CamCapture")
+        iTurn = 0  # Initialize move counter
+        # Play game until completion. Only difference between HUMAN and BOT is
+        # bot moves arm. Images are always being taken. Serial coms (MoveArm)
+        # is threaded to have communication and movement occure concurrently.
+        while not self.gameBoard.complete():
+            if currentPlayer == 'X':
+                print("HUMAN's turn. Please add a marker to the board...")
+
+            else:
+                print("BOT is moving...")
+                botMove = botAI.determineMove(self.gameBoard,currentPlayer)
+                print("BOT choose square {} as its next move".format(botMove))
+                self.MoveArm(iTurn, botMove)
+                # Increment move counter only after on BOT's
+                iTurn+=1
+
+            # look for new symbol. 
+            while iCaptures<nCaptures:
+                # CaptureImage
+                imagePrototype = PiRGBArray(self.camera)
+                self.camera.capture(imagePrototype, format='bgr')
+                imageCapture = imagePrototype.array
+                # scan board for new symbols
+                newIndex, symbol, newCenter = self.ScanSquares(imageCapture)
+                # if no symbol found, reset confirmation counter
+                if newIndex is None:
+                    iCaptures = 0
+                # if a symbol is found, run checks...
+                else:
+                    # If new symbol is the same as the last, increment counter
+                    if newIndex == lastIndex:
+                        lastIndex = newIndex
+                        iCaptures += 1
+                    # if the symbol is different, reset counter
+                    else:
+                        lastIndex  = newIndex
+                        iCaptures = 0
+
+                # Annotate and display image
+                self.__ShowAnnotated__(imageCapture,newIndex, newCenter, symbol)
+                # wait the proscribed period. process time may be significant,
+                # a dedicated wait may not be needed.
+                # time.sleep(capturePeriod) #FIXME: is a sleep timer needed?
+            
+            # Outside the loop only occurs if a new peice is found
+            print("New symbol found at {}".format(newIndex))
+            # Add to currentPlayer's token to gameboard and show the new board
+            self.gameBoard.addMarker(newIndex,currentPlayer)
+            self.markerLocations[newIndex] = newCenter
+            self.gameBoard.showBoard()
+            # switch currentPlayer, reset counter
+            currentPlayer = botAI.getEnemy(currentPlayer)
+            iCaptures = 0
+        
+        # when the game completes, determine the winner
+        winner, combo = self.gameBoard.declareWinner()
+        self.__ShowAnnotated__(imageCapture)
+        self.__DrawWinningLine__(imageCapture,combo)
+        if winner == 'O':
+            print('BOT wins!')
+            print(combo)
+        elif winner == 'X':
+            print('HUMAN wins!')
+            print(combo)
+        else:
+            print('Game tied...')
+
+    def ManualGameInterupts(self):
         """
         Run a game with manual interupts. Hit enter or something to continue. 
+        Deprecated, but useful for debug
         """
         # Loop while the game is not complete (controlled by AI)
         imagePrototype = PiRGBArray(self.camera)
@@ -50,7 +164,7 @@ class TicTacToeControl:
             imageCapture = imagePrototype.array
             plt.imshow(imageCapture)
             plt.show()
-            # look at board and find new peice
+            # look at board and find new piece
             newSquare, _, _ = self.ScanSquares(imageCapture)
             self.gameBoard.addMarker(newSquare,player)
             # ScanSquares returns the location of the new token and sets gameboard
@@ -95,11 +209,12 @@ class TicTacToeControl:
         else:
             print('Game tied...')
 
-    def RunGameAutomatic(self):
+    def ManualGame(self):
         """
-        Run a game that does not require user interaction
+        Run a manual game in which the BOT picks the next move, the HUMAN 
+        move the pieces, and the BOT makes sure the piece is in the right spot.
         """
-        capturePeriod = 0.2 # in seconds
+        # capturePeriod = 0.2 # in seconds
         nCaptures = 6       # number of stationary symbols before confimation
         iCaptures = 0       # iterations with stationary symbol
         imagePrototype = PiRGBArray(self.camera)
@@ -115,6 +230,8 @@ class TicTacToeControl:
                 print("HUMAN's turn. Please add a marker to the board...")
             else:
                 print("Please move for BOT...")
+                #TODO: add first move logic for bot
+
             # look for new symbol. This is blocking. Maybe run threaded? 
             while iCaptures<nCaptures:
                 # CaptureImage
@@ -141,7 +258,7 @@ class TicTacToeControl:
                 self.__ShowAnnotated__(imageCapture,newIndex, newCenter, symbol)
                 # wait the proscribed period. process time may be significant,
                 # a dedicated wait may not be needed.
-                # time.sleep(capturePeriod) 
+                # time.sleep(capturePeriod) #FIXME: is a sleep timer needed?
             
             # Outside the loop only occurs if a new peice is found
             print("New symbol found at {}".format(newIndex))
@@ -230,6 +347,58 @@ class TicTacToeControl:
         else:
             # print('FOUND: O!!!')
             return 'O'
+
+    def MoveArm(self, currentMove, target):
+        """
+        Places a gamepiece from the bank onto the gameboard.
+        Inputs:
+            currentMove: used to pic peices from the bank
+            target: position on the gameboard
+        """
+        #TODO: Currently a blocking operation. make threaded?
+        clawOpen = 85   # Open position of the manipulator
+        clawClose = 45  # Closed position of manipulator
+        
+        bankLoc = self.bankCoordinates[currentMove]
+        targetLoc = self.squareCoordinates[target]
+
+        # TODO: are pauses required between moves?
+        # Move claw to piece in bank, open, lower, close, raise
+        # Move to, stay above
+        cmd = coms.GenerateMoveCommand(bankLoc[0], bankLoc[1], bankLoc[2]+50)
+        self.serial.SendGcode(cmd)
+        # Open Claw
+        cmd = "M106 {}".format(clawOpen)
+        self.serial.SendGcode(cmd)
+        # Lower
+        cmd = coms.GenerateMoveCommand(bankLoc[0], bankLoc[1], bankLoc[2])
+        self.serial.SendGcode(cmd)
+        # Close claw
+        cmd = "M106 {}".format(clawClose)
+        self.serial.SendGcode(cmd)
+        # Raise
+        cmd = coms.GenerateMoveCommand(bankLoc[0], bankLoc[1], bankLoc[2]+50)
+        self.serial.SendGcode(cmd)
+
+        # Move to targeted game square, lower, open, raise, 
+        # Move to, stay above
+        cmd = coms.GenerateMoveCommand(targetLoc[0], targetLoc[1], targetLoc[2]+50)
+        self.serial.SendGcode(cmd)
+        # Lower
+        cmd = coms.GenerateMoveCommand(targetLoc[0], targetLoc[1], targetLoc[2])
+        self.serial.SendGcode(cmd)
+        # Open claw
+        cmd = "M106 {}".format(clawOpen)
+        self.serial.SendGcode(cmd)
+        # Raise
+        cmd = coms.GenerateMoveCommand(targetLoc[0], targetLoc[1], targetLoc[2]+50)
+        self.serial.SendGcode(cmd)
+
+        # Move to home position
+        cmd = coms.GenerateMoveCommand(self.homeCoordinates[0],
+                                       self.homeCoordinates[1],
+                                       self.homeCoordinates[2])
+        self.serial.SendGcode(cmd)
 
     def __GetImageROI__(self,imageCapture,region):
         # Given region bounds, return a small ROI for easy circle detect
@@ -353,5 +522,5 @@ if __name__ == "__main__":
     gameControl.PlayfieldCalibration(image)
     cv.waitKey(1)
     print('HUMAN is X, BOT is O')
-    gameControl.RunGameAutomatic()
+    gameControl.ManualGame()
     input('Hit Enter to end game...')

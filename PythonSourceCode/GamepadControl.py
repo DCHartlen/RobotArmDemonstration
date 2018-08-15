@@ -1,3 +1,4 @@
+#TODO: add documentation
 # Import specifc modules from PyGame to read gamepad
 from pygame import joystick as pgCont
 from pygame import event as pgEvent
@@ -7,7 +8,7 @@ from pygame import init as pgInit
 from time import sleep  # Used for pausing only
 
 # TODO: Why is this not callable?
-class GamePadControl:
+class GamepadControl:
     """
     Class handles all joystick control. All interface functions return a 4 
     element vector of the form [rx, ry, lx, ly], where r is the right joystick,
@@ -52,7 +53,7 @@ class GamePadControl:
 # if called directly, for testing purposes.
 # TODO: remove before integration
 if __name__ == "__main__":
-    gamePad = GamePadControl()
+    gamePad = GamepadControl()
 
     for i in range(20):    # Run for only 20 loops (10 sec)
         values = gamePad.GetScaledAxes()
