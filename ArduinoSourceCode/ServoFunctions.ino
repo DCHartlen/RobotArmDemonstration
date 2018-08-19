@@ -1,8 +1,11 @@
+// Function used for all servo actuation.
+// Example usage:
+//  ActuateServo(RobotServos[ServoElbow], 90.2)
 int ActuateServo(ServoObj &servo, float proposedAngle){
     // Set the servo's angle while respecting bounds
     int tempPwm = 0;    // Temporary servo raw. must respect bounds
     //Check servo bounds, set temporary raw value, return error code
-    tempPwm = InterpolateServo(proposedAngle, servo);
+    tempPwm = InterpolateServo(servo, proposedAngle);
 
     // Set current pwm and angle based on interpolation
     servo.currentPwm = tempPwm;
@@ -13,13 +16,11 @@ int ActuateServo(ServoObj &servo, float proposedAngle){
     return 0;
 }
 
-int InterpolateServo(float &inputAngle, ServoObj servo) {
-    /*
-    This interpolation function computes PWM given an input angle and the
-    calibration points in the servo object. If the PWM bounds are exceeded,
-    it also limits the input angle via a pointer. 
-    Returns the output pwm to move the servo.
-    */
+// This interpolation function computes PWM given an input angle and the
+// calibration points in the servo object. If the PWM bounds are exceeded,
+// it also limits the input angle via a pointer. 
+// Returns the output pwm to move the servo.
+int InterpolateServo(ServoObj servo, float &inputAngle) {
     int pwmOut;
     double temp;
     // Linearly interpolate PWM based on inputAngle and calibration points

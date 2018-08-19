@@ -1,6 +1,26 @@
-#define degreesOfFreedom 4
+//  ServoFunctions - Bounds, Calibration, and Control of all servos
+//
+//  Created by: D.C. Hartlen
+//  Date:       19-Aug-2018
+//  Updated by: 
+//  Date:
+//
+//  This source code controls all servos. This includes mapping of internal servo
+//  angles to useable joint angles, the working bounds of the joints, and
+//  actuation of all servos taking mapping and bounds into account. 
+// 
+//  Note: Calibration assumes linear mapping between servo PWM value and joint
+//  angle. While valid for robot arms which are based on "palletizing" designs,
+//  these assumptions are not valid for all robotic arms and must be adjusted 
+//  for your particular arm. "Palletizing"-type robots include the MeArm, the 
+//  three iterations of the EEZYBotArm, and similar robots.
+//
+//  To perform calibration, it is easiest to disassembly the robot and
+//  individually move each joint to the angle listed in "CalAngle#". Record the 
+//  servo PWM value at teach angle (readMicroseconds()) and insert these values
+//  to "calPwm#". Must be in the Calibration operating mode. 
 
-// Servos defined in an index object to allow easier enumeration
+#define degreesOfFreedom 4
 
 //create alias name of index number for readibility
 #define ServoBase 0
@@ -8,7 +28,8 @@
 #define ServoElbow 2
 #define ServoClaw 3
 
-// Create the prototype of a servo object
+// Create the prototype of a servo control object. This object allows limits,
+// calibration, and control associated with a servo to be stored in one object. 
 struct ServoObj {
     byte pin;           // corresponds to PWM pin arduino. MUST BE PWM
     int currentPwm;     // Current servo Pulse width (used for control)
@@ -23,21 +44,23 @@ struct ServoObj {
     Servo ServoControl; // Servo object used for control and update.
 };
 
-// create an object containing a prototype for each servo
+// create an object containing a prototype for each servo. RobotServos is used
+// for all control of servos during operation. 
 ServoObj RobotServos [degreesOfFreedom];
 
-// Set a servo to a particular angle. Calls ServoBoundCheck to ensure that only
-// valid angles are set. Returns an error code if bounds exceeded and sets servo
-// max/min angle. 
+// Function actuates a particular servo to a proposed angle. If proposed angle 
+// is outside the operating bounds of the robotic arm, the arm will move to the
+// operating bounds of the robot instead. Robotic arm will never exceed the 
+// operating bounds defined in "setupControlServos"
+//
+// Example usage:
+//  ActuateServo(RobotServos[ServoElbow], 90.2)
 int ActuateServo(ServoObj &servo, float proposedAngle);
 
-// Given a servo and angle, assign raw servo value (pointer) and return error code
-// code 1: angle exceeds maximum safe angle. code -1: servo exceed minimum bounds
-int ServoBoundCheck(ServoObj servo, float servoAngle, int &rawServoValue);
-
-int InterpolatePwm(float inputAngle, ServoObj servo);
-float InterpolateAngle(int inputPwm, ServoObj servo);
-
+// Assigns bounds and calibration values to all servos. This function also
+// attaches a servo to a particular pin on the arduino. Note: PWM pins are not
+// required for the Arduino-supplied "Servo.h" library, so literally any digital
+// or analog pin could be used. 
 void setupControlServos(){
     // During calibration, move arm to the calAngle1 and angle 2 positions. Read in
     // actual raw value and set in the appropriate area below. 
@@ -54,7 +77,7 @@ void setupControlServos(){
     RobotServos[ServoBase].ServoControl.attach(RobotServos[ServoBase].pin);
     RobotServos[ServoBase].ServoControl.write(RobotServos[ServoBase].initialAngle);
     RobotServos[ServoBase].currentPwm = 
-        RobotServos[ServoBase].ServoControl.readMicroseconds();
+    RobotServos[ServoBase].ServoControl.readMicroseconds();
     RobotServos[ServoBase].currentAngle = RobotServos[ServoBase].initialAngle;
 
 
@@ -70,7 +93,7 @@ void setupControlServos(){
     RobotServos[ServoShoulder].ServoControl.attach(RobotServos[ServoShoulder].pin);
     RobotServos[ServoShoulder].ServoControl.write(RobotServos[ServoShoulder].initialAngle);
     RobotServos[ServoShoulder].currentPwm = 
-        RobotServos[ServoShoulder].ServoControl.readMicroseconds(); 
+    RobotServos[ServoShoulder].ServoControl.readMicroseconds(); 
     RobotServos[ServoShoulder].currentAngle = RobotServos[ServoShoulder].initialAngle;
 
         // Elbow servo
@@ -85,7 +108,7 @@ void setupControlServos(){
     RobotServos[ServoElbow].ServoControl.attach(RobotServos[ServoElbow].pin);
     RobotServos[ServoElbow].ServoControl.write(RobotServos[ServoElbow].initialAngle);
     RobotServos[ServoElbow].currentPwm = 
-        RobotServos[ServoElbow].ServoControl.readMicroseconds();
+    RobotServos[ServoElbow].ServoControl.readMicroseconds();
     RobotServos[ServoElbow].currentAngle = RobotServos[ServoElbow].initialAngle;
 
         // Claw servo
@@ -100,6 +123,6 @@ void setupControlServos(){
     RobotServos[ServoClaw].ServoControl.attach(RobotServos[ServoClaw].pin);
     RobotServos[ServoClaw].ServoControl.write(RobotServos[ServoClaw].initialAngle);
     RobotServos[ServoClaw].currentPwm = 
-        RobotServos[ServoClaw].ServoControl.readMicroseconds();
+    RobotServos[ServoClaw].ServoControl.readMicroseconds();
     RobotServos[ServoClaw].currentAngle = RobotServos[ServoClaw].initialAngle;
 }

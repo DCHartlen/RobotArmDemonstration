@@ -1,4 +1,6 @@
-// TODO: add header
+// Given the simplicity of these functions, a detailed description is not
+// provided for each one. Please refer to the documentation for your particular
+// LCD screen if you require guideance. 
 
 void LCDCalibration(){
     Screen.setCursor(0,4);

@@ -1,8 +1,15 @@
-// Operating Mode 1: Calibration, directly control raw value. DOES NOT RESPECT
-// MAX AND MIN SAFETIES. This mode must be run upon construction to set setpoints
-// that allow for linear mapping of raw values to real angles.
+//  Initialization functions
+//
+//  Created by: D.C. Hartlen
+//  Date:       19-Aug-2018
+//  Updated by: 
+//  Date:
+//  
+//  Contains initialization (referred to as setup... in function names)
+//  functions for encoder-based control modes. Initialization functions for 
+//  gamepads and g-code are handled in the associated source code for modularity
+
+
 void setupCalibrationMode();
-// Operating Mode 2: Control servo angle directly with encoder
 void setupDirectEncoderControl();
-// Operating Mode 3: Control cartesian position with encoder
 void setupCartesianEncoderControl();

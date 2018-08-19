@@ -1,15 +1,26 @@
-// TODO: Add some header stuff to operating modes object
-// What it does: Initializes an object which contains all operating states and 
-// allows for transtion between them. 
-// This style of changing modes heavily inspired by ThisArm firmware
-// TODO: cite thisarm firmware here
+//  OperatingModeDefinition - Defines behavior of each operating mode
+//
+//  Created by: D.C. Hartlen
+//  Date:       19-Aug-2018
+//  Updated by: 
+//  Date:
+//  
+//  This source code defines the behavior of each operating mode. This is 
+//  accomplished by placing each operating mode in one large structure,
+//  including each modes initialzation, update, debug and display functions.
+//  This approach allows for enumeration of each operating mode, making the
+//  switch between modes easy. Otherwise, firmware for each mode would need to 
+//  be flashed to change opeartion. 
+//
+//  This methodolgy was adapted from the "ThisArm" firmware developed by
+//  "Iamjonah".
 
-// defines a specific type of function which takes no argument and lives inside
-// the operating mode object
+// This typedef allows for the structure to take a function name as a value and
+// for that function to be called by the structure. 
 typedef void (*objectFunction) ();
 
 // Define the prototype for each operating mode. Each operating mode has its own
-// name, initialization, and update function. Update function runs every 10 ms
+// name, initialization, and update function.
 struct ModePrototype{
     String ModeName;
     objectFunction ModeInitialization;
@@ -18,15 +29,20 @@ struct ModePrototype{
     objectFunction LCDMessageUpdate;
 };
 
-void doNothingMode(){
-  
+// Define an empty function if no function is needed. For example, this is used
+// with g-code control as serial communications are handled by internal functions. 
+void doNothingMode(){ 
 }
 
 #define nModes 7    //total number of operating modes
 
-// Create object containing all operating modes
+// Create structure containing all operating modes
 ModePrototype OperatingModes [nModes];  
 
+// Define all operating functions. Each operating function must have, at
+// minimum, a name, an initialization function, and an update/operating
+// function. Seral debug and LCD messages are not required, but must be assigned
+// "doNothingMode" if not used. 
 void setupOperatingModes() {
     // Mode 1 (0); Calibration mode, Encoder directly controls servo raw value, 
     // No logic used for max and min. 

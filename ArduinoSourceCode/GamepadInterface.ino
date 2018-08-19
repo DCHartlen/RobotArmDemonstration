@@ -1,3 +1,4 @@
+// Tokenizes move command and extracts the desired move command.
 void ParseGamepadCommand(char* commandString, int ioArray[]) {
     char* seg;
     int iSeg = 0;
@@ -40,7 +41,7 @@ void DirectGamepadControl(){
                 (commandArray[i]/updateHz*2);
                 ActuateServo(RobotServos[i], RobotServos[i].currentAngle);
             }
-            // report ready
+            // report ready for next command.
             ReportReady();
         }
     }
@@ -82,6 +83,8 @@ void CartesianGamepadControl(){
     }
 }
 
+// Initialization function for direct joint control. Homes arm and readies UART
+// communications.
 void setupDirectGamepadControl(){
   Serial.println("Direct Gamepad Control Initialized");
   // move to home position
@@ -89,6 +92,8 @@ void setupDirectGamepadControl(){
   ReportReady();
 }
 
+// Initialization function for cartesian control. Homes arm and readies UART
+// communications.
 void setupCartesianGamepadControl(){
   Serial.println("Cartesian Gamepad Control Initialized");
   // move to home position

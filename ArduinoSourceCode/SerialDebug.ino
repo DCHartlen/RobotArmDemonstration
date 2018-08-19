@@ -1,6 +1,8 @@
-// TODO: add header information
+// Given the simplicity of each debug message, a detailed description of each 
+// is not provided. However, note that only the information associated with the
+// currently selected joint/DOF is displayed, hence the switch-case statements.
+
 void SerialCalibrationMode(){
-    // displays current servo, angle, and pulse width
     Serial.print("Calibration: Servo: ");
     switch(currentJointControlled) {
         case 0: {
@@ -27,7 +29,6 @@ void SerialCalibrationMode(){
 }
 
 void SerialDirectEncoder(){
-    // displays current servo, angle, and pulse width
     Serial.print("Direct Encoder: Servo: ");
     switch(currentJointControlled) {
         case 0: {
@@ -54,7 +55,6 @@ void SerialDirectEncoder(){
 }
 
 void SerialCartesianEncoder(){
-    // displays current servo, angle, and pulse width
     Serial.print("Cartesian Encoder: DOF: ");
     switch(currentJointControlled) {
         case 0: {

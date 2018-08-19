@@ -2,8 +2,8 @@
 void help() {
   Serial.print(F("GcodeServoRobotArm "));
   Serial.println(F("Commands:"));
-  Serial.println(F("G00 [X/Y/Z/E(mm)] ; - Instance move"));
-  Serial.println(F("G01 [X/Y/Z/E(mm)] [F(mm/s)]; - linear move"));
+  Serial.println(F("G00 [X/Y/Z(mm)] ; - Quick move"));
+  Serial.println(F("G01 [X/Y/Z(mm)] [F(mm/s)]; - Speed controlled, linear move"));
   Serial.println(F("G04 P[seconds]; - delay"));
   Serial.println(F("G90; - absolute mode"));
   Serial.println(F("G91; - relative mode"));
@@ -15,7 +15,10 @@ void help() {
   Serial.println(F("All commands must end with a newline."));
 }
 
-// Given a code (G, X, Y, Z, etc), find the assocaited value
+// Given a specific command component (G, M, X, Y, etc), return the associated 
+// value. So for G01, this function is called five times to fully parse a
+// command. However, this allows the function work with commands of various
+// length and contents
 float ParseCommandComponent(char code,float val) {
   char *ptr=serialBuffer;
   while(ptr && *ptr && ptr<serialBuffer+currentBufferLength) {
@@ -27,14 +30,14 @@ float ParseCommandComponent(char code,float val) {
   return val;
 } 
 
-// pauses but also prints duration of pause to serial
+// Pauses all motion for specifed time period
 void pause(long ms) {
   Serial.println(ms);
   delay(ms);
 }
 
 
-// Shorthand means of printing coordinate pairs to serial
+// Helper function used to print current parsed command components to serial.
 void outputCode(String code,float val) {
   Serial.print(code);
   Serial.print(val);
@@ -51,13 +54,15 @@ void printCurrentLocation() {
   Serial.println(flagAbsolute?"ABS":"REL");
 } 
 
-// Move servos as fast as possible. Used as base for LinearMove
+// Move manipulator to the targeted location as fast as possible. This function
+// is callled by more advanced function to generate speed and path controlled
+// motion by using it in a peicewise manner. 
 int BasicMove (float xTarget, float yTarget, float zTarget) {
     int errorCode = 0;
 
     // perfor inverse kinematics
     MoveIK(xTarget, yTarget, zTarget, shoulderAngle, elbowAngle,baseAngle);
-    
+    // update internal variable tracking current location.
     x = xTarget;
     y = yTarget;
     z = zTarget;
@@ -88,14 +93,15 @@ int LinearMove(float xTarget, float yTarget, float zTarget, float moveSpeed) {
     for (int iSegment = 1; iSegment <= nSegments; iSegment++) {
         segmentMillis = millis();
         BasicMove(x+xDelta/nSegments, y+yDelta/nSegments, y+yDelta/nSegments);
-        // non-blocking pause method
+        // non-blocking way to ensure nothing interupts arm motion. 
         while((millis()-segmentMillis)<segmentDelay) {}; 
     }
     // Move the final segment
     BasicMove(xTarget,yTarget,zTarget);
 }
 
-// Parse buffer and execute moves
+// Given a command stored in the UART buffer, this function parses and exeutes
+// the command.
 void ExecuteCommand() {
     float xTarget, yTarget, zTarget;
 
@@ -175,6 +181,8 @@ void ExecuteCommand() {
     }
 }
 
+// Resets buffer length tracking in preperation for the next command and
+// transmits acknowledgment and ready symbols. 
 void ReportReady() {
     // reset buffer indexer
     currentBufferLength = 0;
@@ -182,7 +190,9 @@ void ReportReady() {
     Serial.print(F(">"));   // standard symbol indicates machine ready for next command
 }
 
-// Main entry point for Gcode control.  Reads serial buffer.
+// Control function used for G-code control. Called every update time period, 
+// however, due to serial communications, this function is blocking, so update
+// frequency is not not maintained in g-code mode. 
 void GCodeControl(){
     // listen for serial commands from computer
     while(Serial.available() >0) {
@@ -205,6 +215,7 @@ void GCodeControl(){
     }
 }
 
+// Initialization function for g-code control. Homes arm and sends ready signal
 void setupGCodeControl(){
   Serial.println("Gcode Control initializated");
   // move to home position
@@ -213,6 +224,8 @@ void setupGCodeControl(){
   ReportReady();
 }
 
+// Initialization mode for Tic Tac Toe mode. Identical to g-code initialization
+// as all move commands used for Tic Tac Toe are transmitted using g-code. 
 void setupTicTacToeControl(){
   Serial.println("Tic Tac Toe Mode Activated. Awaiting Commands...");
   // move to home position

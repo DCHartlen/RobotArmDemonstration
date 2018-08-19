@@ -1,3 +1,8 @@
+// Operating function used for calibration. Encoder directly controls the PWM
+// value of the currently selected servo. In this mode, the PWM bounds of each
+// servo are not respected, so extreme care must be taken not to damage the
+// robotic arm. This mode is not designed for regular operation. Use 
+// "updateDirectEncoderControl()" instead. 
 void updateCalibrationMode(){
     // Update currently selected servo's raw value with encoder
     RobotServos[currentJointControlled].currentPwm += controlEncoder.read()*4;
@@ -12,6 +17,8 @@ void updateCalibrationMode(){
 
 }
 
+// Operating function used for direct control of joint angle using an encoder. 
+// Servo bounds are respected by this function. 
 void updateDirectEncoderControl(){
     // Use encoder to control the currently selected servo's angle. Encoder has
     // four ints per tick, so divide by for. each tick is a degree. 
@@ -25,9 +32,12 @@ void updateDirectEncoderControl(){
     }
 };
 
+// Operating function used cartesian control of the end effector's location
+// using the encoder. While servo bounds are respected by this function, no
+// limits are placed on the coordinates a robot can reach. As such, x,y,z value 
+// can be increased or decreased indefinately even though the arm will not
+// respond. 
 void updateCartesianEncoderControl() {
-    // control x,y,z with encoder.
-
     // Based on "currentJointControlled", choose DoF to increment
     switch(currentJointControlled){
         case 0:     // x direction control

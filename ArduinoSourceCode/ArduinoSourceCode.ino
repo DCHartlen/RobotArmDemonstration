@@ -1,8 +1,47 @@
-// Some header stuff fill in later
+//  Arduino Source Code for a 3+1 degree of freedom robotic arm. 
+//
+//  This file is the main entry point for compilation.
+//
+//  Created by: D.C. Hartlen
+//  Date:       19-Aug-2018
+//  Updated by: 
+//  Date:
+//
+//  Source code is designed to very modular to account for differenting 
+//  operating modes. As a result, this file is primarily concerned with updating
+//  and IO control. Details of specific operating modes are found in the various
+//  librarys. Operating modes (in order) are listed below. Bounds are enforced 
+//  unless otherwise noted. 
+//    1) Calibration: Direct control of servo PWM. Bounds are not enforced
+//    2) Direct Encoder Control: Control angle of each joint using a single 
+//         encoder input. 
+//    3) Cartesian Encoder Control: Control the [x,y,z] position of manipulator
+//         using a single encoder input.
+//    4) G-Code Control: Manipulator responds to G-Code commands send by UART
+//         interface (generally a computer).
+//    5) Direct Gamepad Control: Joints are individually controlled by an XBox
+//         controller plugged into a computer. Commands send by UART.
+//    6) Cartesian Gamepad Control: [x,y,z] position of manipulator is 
+//         controlled with an XBox controller. Commands sent by UART, as above.
+//    7) Tic Tac Toe: Robot arm responds to move commands to play Tic Tac Toe. 
+//         Note: All game logic is conducted off the arduino. Arduino merely
+//         responds to move commands, just like the G-Code mode. 
+//
+//  Robot geometry (required for g-code and cartesian control) is defined in 
+//  "Kinematics.h"
+//
+//  Source code works on an Arduino Uno with no lag, but does fill approximately
+//  65-75% of the Arduino's ROM and RAM. Faster microcontrollers with larger
+//  storage and RAM can be used, but smaller ones will probably not work. 
+//
+//  This source code is based on the "ThisArm" firmware developed by "IamJonah".
+//  https://github.com/lamjonah/ThisArm_Firmware/
+//
+//  This firmware is provided as is, with all liability assumed by the end user. 
 
 #include <Encoder.h>    // Encoder controls
 #include <Servo.h>      // Servo Controlls
-#include <OneButton.h>  // Button debounce controls
+#include <OneButton.h>  // Button debounce and double click controls
 #include <Wire.h>       // I2C used for lcd screen
 #include <LiquidCrystal_I2C.h>          // Control LCD screen
 #include "ServoFunctions.h" // Defines each servo used in arm
@@ -15,7 +54,8 @@
 #include "OperatingModeDefinition.h"    // defines all operating modes
 #include "Kinematics.h"     // Math for inverse kinematics
 
-// Define digital pins for encoder
+// Define digital pins for encoder. Encoder A and B pins must be connected
+// to digital pins with interupt capacity, or encoder will not respond properly.
 #define encoderPinA   2
 #define encoderPinB   3
 #define encoderPinBtn 13
@@ -46,11 +86,6 @@ double baseAngle = 90;
 double shoulderAngle = 90;
 double elbowAngle = 90;
 double clawAngle = 45;
-
-// // Define polar coordinates (used in IK and Gcode)
-// double rValue;   // rValue
-// double hValue;   // hValue
-// double aValue;   // Azimuth
 
 // Define cartesian coordinates
 double x = 0;
