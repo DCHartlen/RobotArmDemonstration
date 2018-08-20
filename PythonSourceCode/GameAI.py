@@ -1,10 +1,36 @@
 """
-Code is derived from work of Cecil Wobker 
-(https://cwoebker.com/posts/tic-tac-toe)
+GameAI.py
+
+Created by: D.C. Hartlen
+Date:       19-Aug-2018
+Updated by: 
+Date:
+
+Contains the algorithm to allow a computer to always win or draw at a game of
+tic tac toe. The entirety of the algorithm presented here was developed by 
+Cecil Wobker (https://cwoebker.com/posts/tic-tac-toe). However, I have made 
+changed variable names to clarify thier meaning, added documentation, and added
+a function or two to allow for easier interface with other project source codes
+
+NOTE: this source code only works if the computer plays as 'O'. I can't figure
+out why, but it always plays the wrong moves if the computer plays as 'X'. I'm
+its a logic issue somewhere, but I haven't had the time to fix it
+
+FIXME: find out why computer can only play as 'O'
 """
 import random
 
 class Game:
+    """
+    Class contains all the gameboard informatino and utilities including 
+    determining the winner and tree-search for determining the next move.
+    However, this class will not actually make a prediction. That is 
+    the standalone function below. 
+    Inputs:
+        squares: 9 entry list containing 'None','X', and 'O'. Used to preload 
+            a configuration into the system. Defaults to empty and an empty
+            gameboard is generated
+    """
     # List of all winning combos
     winningCombos = (
         [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -119,6 +145,15 @@ class Game:
 
 
 def determineMove(board, player):
+    """
+    Determine the optimal move given the current gameboard configuration.
+    Inputs:
+        board: Board class which contains the current state of play
+        player: the player for whom the move is predicted.
+    Returns:
+        Optimal next move for player
+    """
+
     a = -2
     choices = []
     if len(board.availableMoves()) == 9:
@@ -137,10 +172,17 @@ def determineMove(board, player):
 
 
 def getEnemy(player):
+    """
+    Returns the other player. getEnemy('X') returns 'O'.
+    """
     if player == 'X':
         return 'O'
     return 'X'
 
+"""
+Standalone exection allows one to play a game of tic tac toe by specifing
+the square ID (0-9) which one wants to play. 
+"""
 if __name__ == "__main__":
     board = Game()
     board.showBoard()

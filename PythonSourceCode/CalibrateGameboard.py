@@ -1,12 +1,30 @@
-#TODO: add documentation
+"""
+CalibrateGameboard.py
+
+Created by: D.C. Hartlen
+Date:       19-Aug-2018
+Updated by: 
+Date:
+
+File consists of a single class "CalibrateGameboard". Provided an image array
+of an empty gameboard, finds the center of each square, and returns the center
+of each square and the size of the square.
+
+Note: must use specially designed gameboard which has circles inscribed within
+each square. Finding circles is substancially easier than finding the center
+of multiple squares.
+"""
+
 import numpy as np
 import cv2 as cv
 
-# TODO: add doc strings to each function
-class CalibratePlayfield:
+class CalibrateGameboard:
     """
-    Class handles all calibration of the playing field, including finding
-    regions, calculating ROI
+    Class handles calibration of the playfield. Constructor takes one argument,
+    a debug flag.
+    Inputs: 
+        debugFlag (boolean): defaults to False. Setting true enables terminal 
+            printing. Not useful if class is used within another function.
     """
     ratioRadiiSquare = 1.1 # Ratio of circle diameter to game square
 
@@ -16,6 +34,15 @@ class CalibratePlayfield:
             print("Debug Mode Activated")
 
     def FindPlayCircles(self,imageCapture):
+        """
+        Finds the center of each square in the gamboard. Really, it finds the
+        center of each inscribed circles. Also returns size of inscribed circle
+        Inputs:
+            imageCapture: BGR image capture.
+        Returns:
+            circleCenters: Nine entry list of circle centers.
+            circleRadii: Nine entry list of circle radii
+        """
         workingImage = imageCapture.copy()
         self.imageDims = workingImage.shape
         self.imageDims = self.imageDims[0:2] # Remove # of channels
@@ -39,7 +66,7 @@ class CalibratePlayfield:
         circles = np.uint16(np.around(circles))
         circles = circles[0]
 
-         # sort circles, assuming that camera is to the left of image. Therefore:
+        # sort circles, assuming that camera is to the left of image. Therefore:
         #    0 | 1 | 2 
         #    3 | 4 | 5
         #    6 | 7 | 8
@@ -50,8 +77,6 @@ class CalibratePlayfield:
         for i in [0, 3, 6]:
             sortIndex = np.argsort(circles[i:i+3, 0], axis=0)
             circles[i:i+3, :] = circles[sortIndex+i, :]
-
-        # TODO: make sure cicle ordering is consistant.
 
         # If in debug mode, make an image of the circles found
         if(self.debugFlag == True):
@@ -75,6 +100,17 @@ class CalibratePlayfield:
         return circleCenters, circleRadii
 
     def CreateROIs(self, circleCenters, circleRadii):
+        """
+        Given the set of circle centers and radii, generate a region of
+        interest for each square on the gameboard. This makes circle detection
+        quicker later on. Probably. Definately makes the logic easier. 
+        Inputs:
+            circleCenters: Nine entry list of circle centers.
+            circleRadii: Nine entry list of circle radii
+        Returns:
+            gameRegions: 9x4 np array of ROIS. Regions are listed by
+                [yMin, yMax, xMin, xMax].
+        """
         # Regions are [xMin,xMax,yMin,yMax]
         gameRegions = np.zeros([9,4])
 
@@ -92,17 +128,22 @@ class CalibratePlayfield:
         return gameRegions
 
     def GetImageDims(self):
+        """
+        Returns the image dimensions
+        """
         return self.imageDims
         
 
-
+""" 
+Standalone execution loads an image from disk and runs calibration.
+For testing purposes only.
+"""
 if __name__ == "__main__":
-    # path = r"C:\Users\Devon\Desktop\testImages\EmptyBoardStraight.jpg"
-    path = r"C:\Users\Devon\Desktop\testImages\RealBlank.jpg"
+    path = r".\testImages\RealBlank.jpg"
     print(path)
 
     baseImage = cv.imread(path)
-    testCal = CalibratePlayfield(True)
+    testCal = CalibrateGameboard(True)
     centers, radii = testCal.FindPlayCircles(baseImage)
     regions = testCal.CreateROIs(centers,radii)
     

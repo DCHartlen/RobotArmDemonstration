@@ -1,4 +1,20 @@
-#TODO: add documentation
+"""
+TicTacToeControl.py
+
+Created by: D.C. Hartlen
+Date:       19-Aug-2018
+Updated by: 
+Date:
+
+Contains one very large class named "TicTacToeControl". This class interfaces 
+with a Raspberry Pi camera to capture images of the gameboard, detect and 
+recognize symbols, and play three different gamemodes including: 1) Automatic
+gameplay were robot arm places the computer's move, 2) Player moves for the
+computer, but the computer recongizes the new piece, and 3) a debug mode where
+the player moves for the computer and uses keyboard press to make computer take
+a picture of the board. 
+
+"""
 import io
 import numpy as np
 from matplotlib import pyplot as plt
@@ -9,16 +25,22 @@ from picamera.array import PiRGBArray
 import cv2 as cv
 import time
 import GameAI as botAI
-from CalibratePlayfield import CalibratePlayfield
+from CalibrateGameboard import CalibrateGameboard
 import SerialInterface as coms
 
 class TicTacToeControl:
+    """ 
+    Class which handles all symbol detection and gameplay
+    Inputs:
+        debugFlag (boolean): Passed to calibration module. If true, information
+            regarding calibration is printed to terminal.
+    """
     # Define ratio of inner circle (gamepiece) to outer circle (playfield)
     ratioInnerOuter = 0.8
     # Location of each marker inside the appropriate ROI
     markerLocations = [[None,None] for i in range(9)]
     # Grayscale threshold. 255 = white, 0 = black.
-    # TODO: add interactive thresholding??? Maybe adaptive thresholding???
+    # TODO: if a GUI is made, allow threshold to be changed interactively. 
     gsThreshold = 100
     # list players
     players = ['X', 'O']
@@ -26,6 +48,7 @@ class TicTacToeControl:
 
     # Coordinates of the computers gamepiece bank. Specifically, lists containing
     # the (x,y,z) position of all pieces in the bank. 
+    # TODO: set coordinates of the pieces bank.
     bankCoordinates = [
         [1, 1, 1],
         [2, 2, 1],
@@ -36,10 +59,12 @@ class TicTacToeControl:
 
     # Home coordinates for the robot arm. Out of the way of the camera. Maybe
     # over top the gamepiece bank?
+    # TODO: set home coordinates
     homeCoordinates = [2,2,5]
 
     # Coordinates of all game squares. These coordinates are different from
     # calibration coordinates as they are in mm and relative to the robotic arm
+    # TODO: Set position of each square.
     squareCoordinates = [
         [1, 1, 1],
         [1, 2, 1],
@@ -61,8 +86,13 @@ class TicTacToeControl:
         self.camera.rotation = 180
         PiRGBArray(self.camera) #FIXME: removed variable as it caused linting error. Required?
 
-    def __StartSerial__(self, port=0):
-        """ Starts serial communication with arduino"""
+    def StartSerial(self, port=0):
+        """ 
+        Starts serial communication with arduino
+        Inputs:
+            port: com port with arduino activated        
+        """
+        # TODO: finish serial communications interface. Like setting comport?
         self.serial = coms.SerialInterface(port)
 
     def RunGame(self):
@@ -74,8 +104,8 @@ class TicTacToeControl:
         iCaptures = 0       # iterations with stationary symbol
         imagePrototype = PiRGBArray(self.camera)
         lastIndex = None    # tracks last symbol for counter
-        # TODO: Add argument that lets computer (O) go first. Human moves first by 
-        # default
+        # TODO: Add argument that lets computer (O) go first. Human moves first
+        # by default
         currentPlayer = self.firstPlayer
         # start opencv window thread which shows the current, annoted image
         cv.startWindowThread()
@@ -291,9 +321,22 @@ class TicTacToeControl:
         else:
             print('Game tied...')
 
-    def PlayfieldCalibration(self, imageCapture):
+    def GameboardCalibration(self, imageCapture):
+        """
+        Using the CalibrateGameboard class, this function finds the circle
+        centers and radii, and generates ROIs for each square. All values are
+        self-assigned, not returned. 
+        Inputs:
+            imageCapture: RBG image of empty gameboard
+        Self-Assigns:
+            regionCenters: Centers of each square
+            outerRadii: the radii of the outer gameboard circles in square
+            regionROIs: the image ROIs for each square
+            maxInnerRadii: the maximum gamepiece size expected. Used for circle
+                detection. Based on each square's size to deal with persepctive
+        """
         # Create calibration object
-        cal = CalibratePlayfield(self.debugFlag)
+        cal = CalibrateGameboard(self.debugFlag)
         # return the region location and outerRadii.
         self.regionCenters, self.outerRadii = cal.FindPlayCircles(imageCapture)
         # return teh ROIs for each image
@@ -303,6 +346,17 @@ class TicTacToeControl:
                                                  self.ratioInnerOuter))
     
     def ScanSquares(self,imageCapture):
+        """
+        Given an image capture, Look for gamepieces. Returns any new pieces
+        that are found while ignoring old ones. Note: assumes only one new
+        pieces has been added. 
+        Inputs:
+            imageCapture:  color image of gameboard with pieces
+        Returns:
+            newSymbolIndex: the square where the new piece is found (int)
+            symbol: is the new piece 'X' or 'O'
+            newCenter: the global coordinates of the new piece
+        """
         # Convert image to grey scale
         gsCapture = cv.cvtColor(imageCapture,cv.COLOR_BGR2GRAY)
         # initialize returned variables to None
@@ -334,6 +388,16 @@ class TicTacToeControl:
         return newSymbolIndex, symbol, newCenter
 
     def DetectSymbol(self, currentROI, tokenCenter):
+        """
+        If a game piece is found in an ROI, determine if it is 'X' or 'O'. 
+        Pieces with and 'X' will have a white center while pieces with an 'O' 
+        will have a coloured/grey center.
+        Inputs:
+            currentROI: the Current image subset
+            tokenCenter: ROI coordinates of the gamepieces center. 
+        Returns:
+            'X' or 'O'
+        """
         # Get the average of a [6,6] pixel array at the center of the gamepiece
         subset = currentROI[(tokenCenter[1]-3):(tokenCenter[1]+3),
                             (tokenCenter[0]-3):(tokenCenter[0]+3)]
@@ -401,7 +465,14 @@ class TicTacToeControl:
         self.serial.SendGcode(cmd)
 
     def __GetImageROI__(self,imageCapture,region):
-        # Given region bounds, return a small ROI for easy circle detect
+        """
+        Given an image capture and ROI region bounds, return an image subset
+        Inputs:
+            imageCapture
+            region: bounds of the image [yMin,yMax,xMin,xMax]
+        Returns:
+            roi: the image subset
+        """
         roi = imageCapture[region[0]:region[1], region[2]:region[3]]
         return roi
 
@@ -419,10 +490,20 @@ class TicTacToeControl:
         if currentRegionValue == symbol:
             return 0
         else:
-            print('CHEATER!!!!')
+            # print('CHEATER!!!!')
             return 0
     
     def __ShowAnnotated__(self,imageCapture,tempIndex=None,tempLocation=None,tempSymbol=None):
+        """
+        Generates annotations for the image displayed on the screen. Circles
+        all set and transient gamepieces with different color circles and X's.
+        Inputs:
+            imageCapture: The color image of the current gameboard config
+            tempIndex: Used to markup transient piece.
+            tempLocation: Used to markup transient piece.
+            tempSymbol: Used to markup transient piece.
+        """
+
         # Copy board and locations for use in this function. Note, due to python
         # variable management, if copy() isn't used, a "pointer" is passed which
         # alter the class variable. Copy() ensure class variable isn't altered
@@ -460,7 +541,12 @@ class TicTacToeControl:
         cv.imshow("CamCapture",imageCapture)
 
     def __DrawWinningLine__(self, imageCapture, combo):
-        """ Draws the winning line"""
+        """
+        Draws the winning line
+        Inputs:
+            imageCapture: the color image capture
+            combo: The combo that one the game
+        """
         pts = [[None, None],[None, None]]
         if combo == [0, 1, 2]:
             pts[0] = [self.regionROIs[0][2],
@@ -519,7 +605,7 @@ if __name__ == "__main__":
     time.sleep(0.1)
     gameControl.camera.capture(test,format='bgr')
     image = test.array
-    gameControl.PlayfieldCalibration(image)
+    gameControl.GameboardCalibration(image)
     cv.waitKey(1)
     print('HUMAN is X, BOT is O')
     gameControl.ManualGame()

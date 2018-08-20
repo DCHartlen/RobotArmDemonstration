@@ -1,6 +1,22 @@
-#TODO: add documentation
+"""
+SerialInterface.py
 
-import serial   # serial communications with arduino
+Created by: D.C. Hartlen
+Date:       19-Aug-2018
+Updated by: 
+Date:
+
+Contains the class "SerialInterface", which handles all Serial (aka UART) 
+communications with the robotic arm. This includes G-code sending as well as
+gamepad control.  An additional function "GenerateGcode" exists outside this 
+class and generates a G01 command given as of xyz coordinates and a speed.
+Inputs:
+    port (int): the serial port which the Arduino is attached to.
+    debugFlag (boolean): If true, will print debug messages to terminal.
+
+"""
+
+import serial 
 import serial.tools.list_ports
 from GamepadControl import GamepadControl # Gamepad interface
 from time import sleep
@@ -11,13 +27,13 @@ class SerialInterface():
     class handles both gamepad commands as well as g-code.
     """
 
-    # set default arduino com port to be the last one 
-    # TODO: verify this works on raspberry pi
-    # FIXME: Why the fuck did the com port order change?
+    # Default com port (on windwos) for Arduino is last one
     availablePorts = serial.tools.list_ports.comports()
     nPorts = len(availablePorts)
-    arduinoPort = availablePorts[0].device
+    arduinoPort = availablePorts[-1].device
 
+    # This symbol is used by gcode sender and gamepad control to signify the 
+    # robot arm is ready for a new command. 
     ackSymbol = '>'.encode('utf-8')
 
     def __init__(self,port=0, debugFlag=False):
@@ -28,7 +44,12 @@ class SerialInterface():
         self.debugFlag = debugFlag
         # self.arduinoInput.flushInput()
 
-    def ConnectArduino(self, port=0):
+    def ConnectArduino(self, port):
+        """
+        Given a particular port, connect to arduino.
+        Inputs:
+            port (int): coms port arduino is connected to.
+        """
         print('Trying to connect...',end = ' ')
         try:
             self.arduinoPort = self.availablePorts[port].device
@@ -82,20 +103,24 @@ def GenerateMoveCommand(x, y, z, feed=1000):
         x,y,z: absolute location to move to (mm)
         feed: movement rate (mm/min). Default 1000
     Returns:
-        command: gcode string
+        formatted gcode command string.
     """
     return "G01 X{} Y{} Z{} F{}".format(x,y,z,feed)
 
+"""
+Standalone Execution generates an arbitrary gcode string but also connects
+the gamepad direct to the arduino. Debug purposes only. 
+"""
 if __name__ == "__main__":
     gamepad = GamepadControl()
-    coms = SerialInterface()
+    coms = SerialInterface(debugFlag=True)
     print('going to loop')
     print(GenerateMoveCommand(10.2, 82.25323, 123.23223, 10223))
 
-    # for i in range(1,200):    # Run for only 20 loops (10 sec)
-    #     values = gamepad.GetScaledAxes()
-    #     coms.SendGamepadCommand(values)
-    #     sleep(0.1)
+    for i in range(1,200):    # Run for only 20 loops (10 sec)
+        values = gamepad.GetScaledAxes()
+        coms.SendGamepadCommand(values)
+        sleep(0.1)
 
 
 

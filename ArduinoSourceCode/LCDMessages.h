@@ -20,4 +20,4 @@ void LCDCartesianEncoder();
 void LCDGCodeControl();
 void LCDDirectGamepad();
 void LCDCartesianGamepad();
-void LCDTicTacToeControl();    // TODO: is this one needed?
+void LCDTicTacToeControl();
