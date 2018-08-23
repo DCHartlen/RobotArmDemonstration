@@ -23,7 +23,7 @@ from pygame import init as pgInit
 # pylint:enable=E0611
 from time import sleep  # Used for pausing only
 
-class GamepadControl:
+class GamepadInterface:
     indexAxes = [0,1,4,3] # indices for the values of interest. Not sure what 2 is.
     axesTransform = [1,-1,1,-1] # pygame returns inverse y-axis. This fixes it
 
@@ -71,7 +71,7 @@ Standalone execution prints 20 values from the gamepad's axes with 0.5 seconds
 between each. Prints to terminal. Used for debug purposes only.
 """
 if __name__ == "__main__":
-    gamePad = GamepadControl()
+    gamePad = GamepadInterface()
 
     for i in range(20):    # Run for only 20 loops (10 sec)
         values = gamePad.GetScaledAxes()

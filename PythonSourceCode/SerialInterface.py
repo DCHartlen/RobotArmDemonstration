@@ -18,7 +18,7 @@ Inputs:
 
 import serial 
 import serial.tools.list_ports
-from GamepadControl import GamepadControl # Gamepad interface
+from GamepadInterface import GamepadInterface # Gamepad interface
 from time import sleep
 
 class SerialInterface():
@@ -53,7 +53,7 @@ class SerialInterface():
         print('Trying to connect...',end = ' ')
         try:
             self.arduinoPort = self.availablePorts[port].device
-            self.arduinoInput = serial.Serial(self.arduinoPort, 9600, timeout=5)
+            self.arduinoInput = serial.Serial(self.arduinoPort, 57600, timeout=5)
             # Need to readline after initialization or the wprogram stalls later?
             self.arduinoInput.read_until(self.ackSymbol)
             print('Success!')
@@ -112,7 +112,7 @@ Standalone Execution generates an arbitrary gcode string but also connects
 the gamepad direct to the arduino. Debug purposes only. 
 """
 if __name__ == "__main__":
-    gamepad = GamepadControl()
+    gamepad = GamepadInterface()
     coms = SerialInterface(debugFlag=True)
     print('going to loop')
     print(GenerateMoveCommand(10.2, 82.25323, 123.23223, 10223))
