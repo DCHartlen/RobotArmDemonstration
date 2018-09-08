@@ -75,7 +75,7 @@ unsigned long lastLcdMillis = 0;        // TIme of last LCD update
 int encoderFreq = 2;    // Period at which encoder is polled (2ms)
 int updateFreq = 20;    // Period at which commands are updated (10ms)
 int serialFreq = 100;   // Period at which serial update (40ms)
-int lcdFreq = 250;      // Period at which LCD is updated (200ms)  
+int lcdFreq = 333;      // Period at which LCD is updated (200ms)  
 
 // Define mode and joint counters
 int currentMode = 0;  // Defines operating mode that system boots into at startup

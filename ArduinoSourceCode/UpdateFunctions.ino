@@ -5,7 +5,7 @@
 // "updateDirectEncoderControl()" instead. 
 void updateCalibrationMode(){
     // Update currently selected servo's raw value with encoder
-    RobotServos[currentJointControlled].currentPwm += controlEncoder.read()*4;
+    RobotServos[currentJointControlled].currentPwm += controlEncoder.read()*2;
     // Reset encoder tick counter to zero to prevent spiral out of control
     controlEncoder.write(0);
 

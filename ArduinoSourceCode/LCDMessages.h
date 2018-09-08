@@ -11,7 +11,7 @@
 // you will need to adjust these commands accordingly.
 
 // create LCD object used for I2C communications (address, columns, rows)
-LiquidCrystal_I2C Screen(0x27,20,4);
+LiquidCrystal_I2C Screen(0x20,20,4);
 
 // Functions for each operating mode display different messages.
 void LCDCalibration();

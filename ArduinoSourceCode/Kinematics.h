@@ -103,10 +103,12 @@ int MoveIK(double x, double y, double z, double &shoulderAngle, double &elbowAng
     errorCode = ConvertToPolar(x,y,z,rValue,hValue,aValue);
     // Using polar coordinates, perform the mathematics to return shoulder and elbow angle
     if (errorCode != 0){
+        Serial.print("C2P Error");
         return errorCode;
     }
     errorCode = InverseKinematicsMath(rValue,hValue,shoulderAngle,elbowAngle);
     if (errorCode != 0){
+        Serial.print("IK Error");
         return errorCode;
     }
 
