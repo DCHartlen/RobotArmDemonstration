@@ -30,8 +30,8 @@ void setupCartesianEncoderControl() {
     Serial.println("Cartesian Encoder Control");
     clawAngle = 45;
     x = 0;
-    y = 90;
-    z = 90;
+    y = 80;
+    z = 80;
     // LinearMove(x,y,z, 1000);
     BasicMove(x,y,z);
     ActuateServo(RobotServos[4], clawAngle);

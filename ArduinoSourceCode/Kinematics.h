@@ -22,11 +22,11 @@
 float lowerArmLength =  134.5;
 float upperArmLength =  148.0;
 // Assumes that operating envelope is a revolved rectangle. Not entirely true,
-// but good enough. Future work should develop a more robust IK solution. 
-float minEnvelopRadius =  15.0;
-float maxEnvelopRadius =  115.0;
+// but good enough. Fu  ture work should develop a more robust IK solution. 
+float minEnvelopRadius =  60.0;
+float maxEnvelopRadius =  277.0;
 
-float ShoulderOffset = 10.0;     // Distance which shoulder is offset from radial center.
+float ShoulderOffset = 0.0;     // Distance which shoulder is offset from radial center.
 
 // Function performs all math required to determine angle of shoulder and elbow
 // servos to reach a specific 2D location. This 2D location is defined radially
@@ -44,10 +44,12 @@ int InverseKinematicsMath(double rValue, double hValue, double &shoulderAngle, d
     radius = sqrt(radiusSquared);
 
     // Check to see if requested position is out of range.
-    if (radius>lowerArmLength+upperArmLength || radius>maxEnvelopRadius) {
+    if ( (radius>(lowerArmLength+upperArmLength)) || (radius>maxEnvelopRadius) ) {
+        Serial.print("exceeds outer envelope");
         return 1;
     }
-    if (radius <= 0 || radius<minEnvelopRadius) {
+    if ( (radius <= 0) || (radius<minEnvelopRadius) ) {
+        Serial.print("exceeds min envelope");
         return 2;
     }
     radius = radius - ShoulderOffset;
@@ -60,7 +62,7 @@ int InverseKinematicsMath(double rValue, double hValue, double &shoulderAngle, d
     shoulderAngle=(compoundShoulderAng1+compoundShoulderAng2)*180/M_PI;
     elbowAngle=elbowAngle*180/M_PI;
  
-  return 0;
+    return 0;
 }
 
 // Function converts a requested xyz location into a semi-polar set of 
@@ -68,13 +70,11 @@ int InverseKinematicsMath(double rValue, double hValue, double &shoulderAngle, d
 // the 2D coordinates of requested point in the plane correponding to that
 // azimuth plane of action. 
 int ConvertToPolar(double x, double y, double z, double &rValue, double &hValue, double &aValue) {
-    // Function returns an error.
-
-    // hValue is direclty equivalent to z-axis
-    hValue = z;
     if (y<0) {
-        return 1;   // if requested y is below origin, not physically possible
+        return 1;   //Limits vertical travel of the arm
     }
+        // hValue is direclty equivalent to z-axis
+    hValue = z;
     rValue = sqrt(x*x+y*y); // r value, or radial distance is hypotenus of x and y
     
     // Due to the singularity in atan, set up cases for azimuth angle calculation
@@ -103,12 +103,10 @@ int MoveIK(double x, double y, double z, double &shoulderAngle, double &elbowAng
     errorCode = ConvertToPolar(x,y,z,rValue,hValue,aValue);
     // Using polar coordinates, perform the mathematics to return shoulder and elbow angle
     if (errorCode != 0){
-        Serial.print("C2P Error");
         return errorCode;
     }
     errorCode = InverseKinematicsMath(rValue,hValue,shoulderAngle,elbowAngle);
     if (errorCode != 0){
-        Serial.print("IK Error");
         return errorCode;
     }
 

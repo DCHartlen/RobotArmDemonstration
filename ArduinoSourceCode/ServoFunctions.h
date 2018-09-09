@@ -86,7 +86,7 @@ void setupControlServos(){
     RobotServos[ServoShoulder].lwrPwmBound = 812;
     RobotServos[ServoShoulder].UppPwmBound = 2364;
     RobotServos[ServoShoulder].calPwm1 = 852;
-    RobotServos[ServoShoulder].calAngle1 = 0;  // Calibration: shoulder parallel to ground
+    RobotServos[ServoShoulder].calAngle1 = 180;  // Calibration: shoulder parallel to ground, pointing back
     RobotServos[ServoShoulder].calPwm2 = 1676;
     RobotServos[ServoShoulder].calAngle2 = 90;   // Calibration: Shoulder vertical
     RobotServos[ServoShoulder].initialAngle = 90;
@@ -101,10 +101,10 @@ void setupControlServos(){
     RobotServos[ServoElbow].lwrPwmBound = 680;
     RobotServos[ServoElbow].UppPwmBound = 2120;
     RobotServos[ServoElbow].calPwm1 = 1892;
-    RobotServos[ServoElbow].calAngle1 = 0;   // Calibration: Elbow crank parallel to ground
+    RobotServos[ServoElbow].calAngle1 = 180;   // Calibration: Elbow crank parallel to ground, pointing back
     RobotServos[ServoElbow].calPwm2 = 1020;
     RobotServos[ServoElbow].calAngle2 = 90;  // Calibration: Elbow crank vertical 
-    RobotServos[ServoElbow].initialAngle = 75;
+    RobotServos[ServoElbow].initialAngle = 140;
     RobotServos[ServoElbow].ServoControl.attach(RobotServos[ServoElbow].pin);
     RobotServos[ServoElbow].ServoControl.write(RobotServos[ServoElbow].initialAngle);
     RobotServos[ServoElbow].currentPwm = 
@@ -119,7 +119,7 @@ void setupControlServos(){
     RobotServos[ServoClaw].calAngle1 = 0;    // Calibration: Claw fully closed
     RobotServos[ServoClaw].calPwm2 = 1452;
     RobotServos[ServoClaw].calAngle2 = 90;   // Calibration: Claw open at right angle.
-    RobotServos[ServoClaw].initialAngle = 45;
+    RobotServos[ServoClaw].initialAngle = 30;
     RobotServos[ServoClaw].ServoControl.attach(RobotServos[ServoClaw].pin);
     RobotServos[ServoClaw].ServoControl.write(RobotServos[ServoClaw].initialAngle);
     RobotServos[ServoClaw].currentPwm = 

@@ -219,7 +219,7 @@ void GCodeControl(){
 void setupGCodeControl(){
   Serial.println("Gcode Control initializated");
   // move to home position
-  LinearMove(0,80,0,1000);
+  LinearMove(0,80,80,1000);
   printCurrentLocation();
   ReportReady();
 }
@@ -229,7 +229,7 @@ void setupGCodeControl(){
 void setupTicTacToeControl(){
   Serial.println("Tic Tac Toe Mode Activated. Awaiting Commands...");
   // move to home position
-  LinearMove(0,80,0,1000);
+  LinearMove(0,80,80,1000);
   printCurrentLocation();
   ReportReady();
 }
