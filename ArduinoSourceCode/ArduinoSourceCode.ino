@@ -58,7 +58,7 @@
 // to digital pins with interupt capacity, or encoder will not respond properly.
 #define encoderPinA   2
 #define encoderPinB   3
-#define encoderPinBtn 13
+#define encoderPinBtn 12
 
 // define encoder object
 Encoder controlEncoder(encoderPinA,encoderPinB);
@@ -125,7 +125,6 @@ void loop() {
     // Define a high speed loop which track encoder ticks
     if ((currentMillis-lastEncoderMillis) > encoderFreq) {
         lastEncoderMillis = currentMillis;  // update time tracker for next iteration
-
         // update the button click object. Needed to detect single and double clicks
         encoderBtn.tick(); 
     }

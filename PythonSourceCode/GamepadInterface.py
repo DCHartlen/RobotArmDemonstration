@@ -25,7 +25,7 @@ from time import sleep  # Used for pausing only
 
 class GamepadInterface:
     indexAxes = [0,1,4,3] # indices for the values of interest. Not sure what 2 is.
-    axesTransform = [1,-1,1,-1] # pygame returns inverse y-axis. This fixes it
+    axesTransform = [1,1,1,-1] # pygame returns inverse y-axis. This fixes it
 
     # Initialize PyGame and find joystick/gamepad
     def __init__(self):

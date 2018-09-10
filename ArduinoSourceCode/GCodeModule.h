@@ -29,7 +29,7 @@
 char flagAbsolute=1;  // commands default to absolute coordinates
 char serialBuffer[bufferLength];
 int currentBufferLength;
-float feedRate = 1000;  // default movement speed
+float feedRate = 5000;  // default movement speed
 
 // initialization function for gcode control
 void setupGCodeControl();

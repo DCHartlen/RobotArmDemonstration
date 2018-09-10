@@ -16,12 +16,13 @@ import SerialInterface as si
 from time import sleep
 
 gamepad = GamepadInterface()
-coms = si.SerialInterface(debugFlag=True)
+coms = si.SerialInterface(port=1, debugFlag=True)
 
-delay = 1/25
+delay = 0.0200
 
 # Clunky, but effect. Just push all commands. No provision for stopping.
 while True:
     gamepadValues = gamepad.GetScaledAxes()
-    coms.SendGamepadCommand(gamepadValues)
+    msg = coms.SendGamepadCommand(gamepadValues)
+    print(msg)
     sleep(delay)

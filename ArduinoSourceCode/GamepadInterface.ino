@@ -1,18 +1,18 @@
-// Tokenizes move command and extracts the desired move command.
-void ParseGamepadCommand(char* commandString, int ioArray[]) {
+// // Tokenizes move command and extracts the desired move command.
+void ParseGamepadCommand(int ioArray[]){
     char* seg;
     int iSeg = 0;
     // Tokenize array in order to read it in as ints
     // Need to run first token manually
-    seg = strtok(commandString," ");
+    seg = strtok(serialBuffer," ");
     // convert token to integer
-    ioArray[iSeg] = atoi(seg);
+    ioArray[iSeg] = atoi(seg);    
     // now use a loop to go through the rest of the char array
     while (seg != NULL) {
         iSeg++;
         seg = strtok(NULL," ");
         ioArray[iSeg] = atoi(seg);
-    }   
+    }
 }
 
 // Main entry point for direct gamepad control. Read continously from serial
@@ -33,16 +33,17 @@ void DirectGamepadControl(){
             serialBuffer[currentBufferLength] = 0;
 
             // parse the character array into an array of ints.
-            ParseGamepadCommand(serialBuffer,commandArray);
+            ParseGamepadCommand(commandArray);
 
             // Actuate servos an increment based on gamepad 
             for(int i = 0; i < degreesOfFreedom; i++){
                 RobotServos[i].currentAngle = RobotServos[i].currentAngle+
-                (commandArray[i]/updateHz*2);
+                    (commandArray[i]/updateHz*10);
                 ActuateServo(RobotServos[i], RobotServos[i].currentAngle);
             }
             // report ready for next command.
             ReportReady();
+            return;
         }
     }
 }
@@ -65,15 +66,16 @@ void CartesianGamepadControl(){
             serialBuffer[currentBufferLength] = 0;
 
             // parse the character array into an array of ints.
-            ParseGamepadCommand(serialBuffer,commandArray);
+            // ParseGamepadCommand(serialBuffer,commandArray);
+            ParseGamepadCommand(commandArray);
 
             // increment xyz position.
             // NOTE: moveIK does not place bounds on xyz location
-            x = x+(commandArray[0]/updateHz*4);
-            y = y+(commandArray[1]/updateHz*4);
-            z = z+(commandArray[2]/updateHz*4);
+            x = x-(commandArray[0]/updateHz*15);
+            y = y-(commandArray[1]/updateHz*15);
+            z = z+(commandArray[2]/updateHz*15);
             RobotServos[ServoClaw].currentAngle = 
-                RobotServos[ServoClaw].currentAngle+(commandArray[3]/updateHz*2);
+                RobotServos[ServoClaw].currentAngle+(commandArray[3]/updateHz*20);
             BasicMove(x,y,z);
             ActuateServo(RobotServos[ServoClaw],RobotServos[ServoClaw].currentAngle);
  
@@ -88,7 +90,7 @@ void CartesianGamepadControl(){
 void setupDirectGamepadControl(){
   Serial.println("Direct Gamepad Control Initialized");
   // move to home position
-  LinearMove(0,80,0,1000);
+  BasicMove(0,80,80);
   ReportReady();
 }
 
@@ -97,6 +99,6 @@ void setupDirectGamepadControl(){
 void setupCartesianGamepadControl(){
   Serial.println("Cartesian Gamepad Control Initialized");
   // move to home position
-  LinearMove(0,80,0,1000);
+  BasicMove(0,80,80);
   ReportReady();
 }

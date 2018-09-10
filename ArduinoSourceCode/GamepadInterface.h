@@ -14,7 +14,7 @@
 //  commands are handled by this code. Note that all UART send and receive
 //  operations are blocking.
 
-float updateHz = 1000/10;   // used to scale inputs to units/s. Manually set 10
+float updateHz = 1000/25;   // used to scale inputs to units/s. Manually set 10
 
 // initialization for direct control of servos with gamepad
 void setupDirectGamepadControl();

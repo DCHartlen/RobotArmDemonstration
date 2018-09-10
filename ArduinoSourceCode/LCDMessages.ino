@@ -62,16 +62,16 @@ void LCDDirectGamepad(){
     Screen.print("DIRECT GAMEPAD");
     Screen.setCursor(0,1);
     Screen.print("BASE:");
-    Screen.print(baseAngle);
+    Screen.print(RobotServos[0].currentAngle);
     Screen.setCursor(10,1);
     Screen.print("SLDR:");
-    Screen.print(shoulderAngle);
+    Screen.print(RobotServos[1].currentAngle);
     Screen.setCursor(0,2);
     Screen.print("ELBW:");
-    Screen.print(elbowAngle);
+    Screen.print(RobotServos[2].currentAngle);
     Screen.setCursor(10,2);
     Screen.print("CLAW:");
-    Screen.print(clawAngle);
+    Screen.print(RobotServos[3].currentAngle);
 }
 
 void LCDCartesianGamepad(){
@@ -89,7 +89,7 @@ void LCDCartesianGamepad(){
     Screen.print(z);
     Screen.setCursor(10,2);
     Screen.print("CLAW:");
-    Screen.print(clawAngle);
+    Screen.print(RobotServos[3].currentAngle);
 }
 
 void LCDGCodeControl(){
@@ -107,7 +107,7 @@ void LCDGCodeControl(){
     Screen.print(z);
     Screen.setCursor(10,2);
     Screen.print("CLAW:");
-    Screen.print(clawAngle);
+    Screen.print(RobotServos[3].currentAngle);
 }
 
 void LCDTicTacToeControl(){
@@ -125,5 +125,5 @@ void LCDTicTacToeControl(){
     Screen.print(z);
     Screen.setCursor(10,2);
     Screen.print("CLAW:");
-    Screen.print(clawAngle);
+    Screen.print(RobotServos[3].currentAngle);
 }
