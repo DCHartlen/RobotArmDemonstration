@@ -34,7 +34,8 @@ struct ModePrototype{
 void doNothingMode(){ 
 }
 
-#define nModes 7    //total number of operating modes
+// #define nModes 7    //total number of operating modes
+#define nModes 5 // number only including gamepad control
 
 // Create structure containing all operating modes
 ModePrototype OperatingModes [nModes];  
@@ -66,33 +67,33 @@ void setupOperatingModes() {
     OperatingModes[2].ModeSerialDebug = SerialCartesianEncoder;
     OperatingModes[2].LCDMessageUpdate = LCDCartesianEncoder;
 
-    // Mode 4 (3): G-Code control
-    OperatingModes[3].ModeName = "GCodeControl";
-    OperatingModes[3].ModeInitialization = setupGCodeControl; // found in GCodeModule
-    OperatingModes[3].ModeUpdate = GCodeControl;    // found in GCodeControl
+    // Mode 4 (3): Gamepad Control of joints
+    OperatingModes[3].ModeName = "DirectGamepadControl";
+    OperatingModes[3].ModeInitialization = setupDirectGamepadControl; 
+    OperatingModes[3].ModeUpdate = DirectGamepadControl;
     OperatingModes[3].ModeSerialDebug = doNothingMode;
-    OperatingModes[3].LCDMessageUpdate = LCDGCodeControl;
+    OperatingModes[3].LCDMessageUpdate = LCDDirectGamepad;
 
-    // Mode 5 (4): Gamepad Control of joints
-    OperatingModes[4].ModeName = "DirectGamepadControl";
-    OperatingModes[4].ModeInitialization = setupDirectGamepadControl; 
-    OperatingModes[4].ModeUpdate = DirectGamepadControl;
+    // Mode 5 (4): Gamepad Control of location
+    OperatingModes[4].ModeName = "CartesianGamepadControl";
+    OperatingModes[4].ModeInitialization = setupCartesianGamepadControl; 
+    OperatingModes[4].ModeUpdate = CartesianGamepadControl;
     OperatingModes[4].ModeSerialDebug = doNothingMode;
-    OperatingModes[4].LCDMessageUpdate = LCDDirectGamepad;
+    OperatingModes[4].LCDMessageUpdate = LCDCartesianGamepad;
 
-    // Mode 6 (5): Gamepad Control of location
-    OperatingModes[5].ModeName = "CartesianGamepadControl";
-    OperatingModes[5].ModeInitialization = setupCartesianGamepadControl; 
-    OperatingModes[5].ModeUpdate = CartesianGamepadControl;
-    OperatingModes[5].ModeSerialDebug = doNothingMode;
-    OperatingModes[5].LCDMessageUpdate = LCDCartesianGamepad;
+    // // Mode 6 (5): G-Code control
+    // OperatingModes[5].ModeName = "GCodeControl";
+    // OperatingModes[5].ModeInitialization = setupGCodeControl; // found in GCodeModule
+    // OperatingModes[5].ModeUpdate = GCodeControl;    // found in GCodeControl
+    // OperatingModes[5].ModeSerialDebug = doNothingMode;
+    // OperatingModes[5].LCDMessageUpdate = LCDGCodeControl;
 
-    // Mode 7 (6): Mode for Tic-Tac-Toe (which is controlled using gcode)
-    OperatingModes[6].ModeName = "TicTacToeMode";
-    OperatingModes[6].ModeInitialization = setupTicTacToeControl; // found in GCodeModule
-    OperatingModes[6].ModeUpdate = GCodeControl;    // found in GCodeControl
-    OperatingModes[6].ModeSerialDebug = doNothingMode;
-    OperatingModes[6].LCDMessageUpdate = LCDTicTacToeControl;
+    // // Mode 7 (6): Mode for Tic-Tac-Toe (which is controlled using gcode)
+    // OperatingModes[6].ModeName = "TicTacToeMode";
+    // OperatingModes[6].ModeInitialization = setupTicTacToeControl; // found in GCodeModule
+    // OperatingModes[6].ModeUpdate = GCodeControl;    // found in GCodeControl
+    // OperatingModes[6].ModeSerialDebug = doNothingMode;
+    // OperatingModes[6].LCDMessageUpdate = LCDTicTacToeControl;
 }
 
 
